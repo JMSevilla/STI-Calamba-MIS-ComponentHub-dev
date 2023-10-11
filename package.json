@@ -1,0 +1,91 @@
+{
+  "name": "sti_monitoring_system",
+  "version": "0.1.0",
+  "private": true,
+  "homepage": ".",
+  "dependencies": {
+    "@emotion/react": "^11.11.1",
+    "@emotion/styled": "^11.11.0",
+    "@fontsource/roboto": "^5.0.8",
+    "@hookform/resolvers": "^3.3.1",
+    "@jitsi/electron-sdk": "^6.0.10",
+    "@jitsi/react-sdk": "^1.3.0",
+    "@material-tailwind/react": "^2.1.2",
+    "@mui/icons-material": "^5.14.8",
+    "@mui/material": "^5.14.8",
+    "@mui/x-data-grid": "^6.14.0",
+    "@mui/x-date-pickers": "^6.16.1",
+    "@testing-library/jest-dom": "^5.17.0",
+    "@testing-library/react": "^13.4.0",
+    "@testing-library/user-event": "^13.5.0",
+    "@types/jest": "^27.5.2",
+    "@types/node": "^16.18.48",
+    "@types/react": "^18.2.21",
+    "@types/react-date-range": "^1.4.5",
+    "@types/react-dom": "^18.2.7",
+    "@wojtekmaj/react-timerange-picker": "^5.4.2",
+    "@zxcvbn-ts/core": "^3.0.3",
+    "@zxcvbn-ts/language-common": "^3.0.3",
+    "apexcharts": "^3.42.0",
+    "axios": "^1.5.0",
+    "crypto-browserify": "^3.12.0",
+    "date-fns": "^2.30.0",
+    "electron": "^26.2.3",
+    "electron-remote": "^1.3.0",
+    "firebase": "^10.4.0",
+    "framer-motion": "^10.16.4",
+    "jotai": "^2.4.2",
+    "moment": "^2.29.4",
+    "moment-timezone": "^0.5.43",
+    "purecloud-guest-chat-client": "^13.2.0",
+    "purecloud-platform-client-v2": "^176.0.0",
+    "react": "^18.2.0",
+    "react-apexcharts": "^1.4.1",
+    "react-async-hook": "^4.0.0",
+    "react-cookie": "^6.1.1",
+    "react-date-range": "^1.4.0",
+    "react-dom": "^18.2.0",
+    "react-hook-form": "^7.46.1",
+    "react-imask": "^7.1.3",
+    "react-query": "^3.39.3",
+    "react-quill": "^2.0.0",
+    "react-scripts": "5.0.1",
+    "react-spring": "^9.7.2",
+    "react-toastify": "^9.1.3",
+    "reactour": "^1.19.1",
+    "typescript": "^4.9.5",
+    "web-vitals": "^2.1.4",
+    "zod": "^3.22.2"
+  },
+  "scripts": {
+    "start": "react-scripts start",
+    "build": "react-scripts build",
+    "test": "react-scripts test",
+    "eject": "react-scripts eject"
+  },
+  "eslintConfig": {
+    "extends": [
+      "react-app",
+      "react-app/jest"
+    ]
+  },
+  "browserslist": {
+    "production": [
+      ">0.2%",
+      "not dead",
+      "not op_mini all"
+    ],
+    "development": [
+      "last 1 chrome version",
+      "last 1 firefox version",
+      "last 1 safari version"
+    ]
+  },
+  "devDependencies": {
+    "@types/jsonwebtoken": "^9.0.3",
+    "@types/reactour": "^1.18.3",
+    "react-app-rewired": "^2.2.1",
+    "react-router-dom": "^6.15.0",
+    "tailwindcss": "^3.3.3"
+  }
+}
