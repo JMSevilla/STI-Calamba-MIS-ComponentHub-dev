@@ -9,7 +9,6 @@ import { AxiosInstance } from "axios";
 
 const HTTP_OPTIONS: HttpOptions = {
     headers: {
-        "Content-Type": "application/json",
         "x-api-key" : config.value.TOKEN
     },
     onRequest: (req: any) => {
@@ -18,7 +17,7 @@ const HTTP_OPTIONS: HttpOptions = {
     }
 }
 
-export const httpClient = new Http({ ...HTTP_OPTIONS, baseURL: config.value.STAGING })
+export const httpClient = new Http({ ...HTTP_OPTIONS, baseURL: config.value.DEV_URL })
 
 export const useApiCallback = <R, A extends unknown>(asyncFn: (api: Api, args: A) => Promise<R>) =>
     useAsyncCallback(async (args?: A) => {
