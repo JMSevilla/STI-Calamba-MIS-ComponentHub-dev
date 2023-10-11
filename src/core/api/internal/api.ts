@@ -22,7 +22,7 @@ export class InternalRequestAPI {
     public checkPrimaryDetails(props: {
         email: string | undefined, username: string | undefined
     }){
-        return this.axios.get(`/v1/accountsservice/map-primary-check/${props.email}/${props.username}`)
+        return this.axios.post(`/v1/accountsservice/map-primary-check`, props)
     }
     public codeEntry(props: {
         code: number,
