@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import { HashRouter } from 'react-router-dom';
+import { BrowserRouter } from 'react-router-dom';
 import Initialization from './router'
 import reportWebVitals from './reportWebVitals';
 import '@fontsource/roboto/300.css';
@@ -25,7 +25,7 @@ const root = ReactDOM.createRoot(
 const queryClient = new QueryClient({});
 
 root.render(
-  <HashRouter>
+  <BrowserRouter>
     <LocalizationProvider dateAdapter={AdapterMoment}>
     <QueryClientProvider client={queryClient}>
       <ToastProvider>
@@ -51,6 +51,6 @@ root.render(
       </ToastProvider>
     </QueryClientProvider>
     </LocalizationProvider>
-  </HashRouter>
+  </BrowserRouter>
 )
 reportWebVitals();
