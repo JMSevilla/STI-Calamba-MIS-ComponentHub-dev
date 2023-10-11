@@ -9,6 +9,7 @@ import { AxiosInstance } from "axios";
 
 const HTTP_OPTIONS: HttpOptions = {
     headers: {
+        "Content-Type" : "application/json",
         "x-api-key" : config.value.TOKEN
     },
     onRequest: (req: any) => {
