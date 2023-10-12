@@ -734,7 +734,7 @@ const AddNewModerator = () => {
                     onSuccess: (res: AxiosResponse | undefined) => {
                         if(res?.data === 200){
                             ToastMessage(
-                                "Successfully added moderator",
+                                creationType ? "Successfully added administrator" : "Successfully added moderator",
                                 "top-right",
                                 false,
                                 true,
