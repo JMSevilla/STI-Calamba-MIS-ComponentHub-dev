@@ -25,7 +25,7 @@ const root = ReactDOM.createRoot(
 const queryClient = new QueryClient({});
 
 root.render(
-  <BrowserRouter>
+  <BrowserRouter basename='/'>
     <LocalizationProvider dateAdapter={AdapterMoment}>
     <QueryClientProvider client={queryClient}>
       <ToastProvider>

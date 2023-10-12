@@ -2,7 +2,7 @@
   "name": "sti_monitoring_system",
   "version": "0.1.0",
   "private": true,
-  "homepage": ".",
+  "homepage": "https://sti-calamba-mis-component-hub-dev.vercel.app",
   "dependencies": {
     "@emotion/react": "^11.11.1",
     "@emotion/styled": "^11.11.0",
