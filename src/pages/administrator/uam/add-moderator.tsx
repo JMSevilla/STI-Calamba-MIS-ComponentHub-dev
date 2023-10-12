@@ -726,8 +726,8 @@ const AddNewModerator = () => {
                     email: values.email,
                     password: values.password,
                     mobileNumber: values.mobileNumber,
-                    course_id: values.course_id,
-                    section: values.section,
+                    course_id: creationType ? "0" : values.course_id,
+                    section: creationType ? "0" : values.section,
                     type: creationType ? 1 : 2
                 }
                 await mutateAsync(objModerator, {
@@ -874,7 +874,10 @@ const AddNewModerator = () => {
                                             </div>
                                             
                                             <div className="flex flex-col gap-9">
-                                                <div className='rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark'>
+                                                {
+                                                    !creationType &&
+                                                    <>
+                                                    <div className='rounded-sm border border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark'>
                                                     <div className="border-b border-stroke py-4 px-6.5 dark:border-strokedark">
                                                         <h3 className="font-medium text-black dark:text-white">
                                                             Course Assignation
@@ -906,6 +909,8 @@ const AddNewModerator = () => {
                                                     </div>
 
                                                 </div>
+                                                    </> 
+                                                }
                                             </div>
                                         </div>
                                         <NormalButton 
