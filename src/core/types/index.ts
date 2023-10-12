@@ -38,6 +38,7 @@ export type AccountModeratorProps = {
     mobileNumber: string | undefined
     section: string
     course_id: string
+    type?: number
 }
 
 export type AccountStudentProps = {

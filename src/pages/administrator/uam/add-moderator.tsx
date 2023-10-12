@@ -41,6 +41,7 @@ import AutorenewIcon from '@mui/icons-material/Autorenew';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import routes from '../../../router/path'
 import { useNavigate } from 'react-router-dom'
+import { BasicSwitch } from '../../../components/Switch/BasicSwitch'
 import { useGenerationPassword } from '../../../core/hooks/useGenerationPassword'
 const options = {
     dictionary: {
@@ -173,6 +174,7 @@ const AddNewModerator = () => {
     const [open, setOpen] = useState<boolean>(false)
     const [accountDeletionId, setAccountDeletionId] = useState<number>(0)
     const [selectedSection, setSelectedSection] = useState(0)
+    const [creationType, setCreationType] = useState(false)
     const [studentList, setStudentList] = useState([])
     
     const apiAccountList = useApiCallback(
@@ -725,7 +727,8 @@ const AddNewModerator = () => {
                     password: values.password,
                     mobileNumber: values.mobileNumber,
                     course_id: values.course_id,
-                    section: values.section
+                    section: values.section,
+                    type: creationType ? 1 : 2
                 }
                 await mutateAsync(objModerator, {
                     onSuccess: (res: AxiosResponse | undefined) => {
@@ -812,6 +815,9 @@ const AddNewModerator = () => {
     useEffect(() => {
         courseAndSectionList()
     }, [])
+    const handleChangeCreationType = (event: React.ChangeEvent<HTMLInputElement>) => {
+        setCreationType(event.target.checked)
+    }
     return (
         <>
             {
@@ -830,7 +836,7 @@ const AddNewModerator = () => {
                                 tabsinject={
                                     [
                                         {
-                                            label: 'Moderator Creation'
+                                            label: 'Administrator / Moderator Creation'
                                         },
                                         {
                                             label: 'Administrator / Moderator List'
@@ -850,8 +856,18 @@ const AddNewModerator = () => {
                                                 <div className='rounded-sm border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark'>
                                                     <div className='border-b border-stroke py-4 px-6.5 dark:border-strokedark'>
                                                         <h3 className="font-medium text-black dark:text-white">
-                                                            Add new moderator
+                                                            {
+                                                                creationType ? 'Add new administrator' : 'Add new moderator'
+                                                            }
                                                         </h3>
+                                                        <BasicSwitch 
+                                                            checked={creationType}
+                                                            handleChange={handleChangeCreationType}
+                                                            inputProps={{ 'aria-label': 'controlled' }}
+                                                            label={
+                                                                creationType ? 'Administrator creation' : 'Moderator creation'
+                                                            }
+                                                        />
                                                     </div>
                                                     <AddNewModeratorForm />
                                                 </div>
