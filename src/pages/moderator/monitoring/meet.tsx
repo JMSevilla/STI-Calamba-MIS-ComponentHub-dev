@@ -299,7 +299,6 @@ const Meet: React.FC = () => {
     }
     function DoDataBreakdown() {
         apiJoinedParticipantsList.execute(roomInfo?.room_id ?? matchRId).then(res => {
-            console.log(res.data)
             if(res.data == 400) {
                 setJoinedParticipants([])
             } else {

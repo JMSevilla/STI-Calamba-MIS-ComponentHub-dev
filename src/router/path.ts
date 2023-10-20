@@ -1,22 +1,29 @@
 import { AcademicSvg } from "../components/TextField/icon/svgs/Academic"
 import { AddStudentSvg } from "../components/TextField/icon/svgs/AddStudent"
+import { CategoriesSvg } from "../components/TextField/icon/svgs/Categories"
 import { ClassRoomSvg } from "../components/TextField/icon/svgs/Classroom"
 import { ClockSvg } from "../components/TextField/icon/svgs/Clock"
 import { DashboardSvg } from "../components/TextField/icon/svgs/Dashboard"
 import { MonitoringSvg } from "../components/TextField/icon/svgs/Monitoring"
 import { ReportSvg } from "../components/TextField/icon/svgs/Report"
+import { SubjectSvg } from "../components/TextField/icon/svgs/Subject"
 import { TicketSvg } from "../components/TextField/icon/svgs/Ticket"
 import { UAMSvg } from "../components/TextField/icon/svgs/UAM"
 import DashboardOverview from "../pages/administrator/Overview"
+import CategoriesManagement from "../pages/administrator/category/category"
 import ComLabSettings from "../pages/administrator/comlab/comlab-settings"
+import CourseManagement from "../pages/administrator/courses/course-management"
 import PCNumberSettings from "../pages/administrator/pc/pc-number-settings"
 import Profile from "../pages/administrator/profile"
+import SubjectManagement from "../pages/administrator/subject/subject-management"
 import TicketDetails from "../pages/administrator/ticketing/ticket-details"
 import TicketList from "../pages/administrator/ticketing/ticket-list"
 import AddNewModerator from "../pages/administrator/uam/add-moderator"
+import AccountArchived from "../pages/administrator/uam/archived-accounts"
 import ModeratorDashboardOverview from "../pages/moderator/Overview"
 import AddStudent from "../pages/moderator/add-students"
 import StudentAttendance from "../pages/moderator/attendance/student-attendance"
+import MyCourse from "../pages/moderator/course/my-course"
 import Meet from "../pages/moderator/monitoring/meet"
 import MonitoringManagement from "../pages/moderator/monitoring/monitoring-management"
 import CreateTicketFormAdditional from "../pages/moderator/ticketing/create-ticket"
@@ -28,6 +35,7 @@ import DashboardStudent from "../pages/student/DashboardStudent"
 import ClassRoom from "../pages/student/classroom/classroom"
 import MeetStudent from "../pages/student/classroom/meetstudent"
 import UnauthorizedPage from "../pages/unauthorized-page"
+
 
 type PathProps = {
     path: string
@@ -42,6 +50,7 @@ type CustomSubMenus = {
     subMenuTitle?: string
     svg?: any
     withPushNotifs?: boolean
+    isNewFeature?: boolean
 }
 type CoreRoutesProps = {
     path: string
@@ -55,6 +64,8 @@ type CoreRoutesProps = {
     withPushNotifs?: boolean
     customSubs: CustomSubMenus[]
     isHidden?: boolean
+    isNewFeature?: boolean
+    isBetaTest?: boolean
 }
 
 type RouteProps = {
@@ -65,6 +76,8 @@ type RouteProps = {
     moderator_dashboard: PathProps
     unauthorized: PathProps
     forgot_password: PathProps
+    mobile_prevention: PathProps
+    approval_waiting: PathProps
 }
 
 export const Path: RouteProps = {
@@ -76,7 +89,9 @@ export const Path: RouteProps = {
         path: '/dashboard/moderator'
     },
     unauthorized: { path : '/unauthorized' },
-    forgot_password: { path: '/forgot-password' }
+    forgot_password: { path: '/forgot-password' },
+    mobile_prevention: { path: '/mobile-prevention' },
+    approval_waiting: { path: '/approval-waiting' }
 }
 
 const coreRoutes: CoreRoutesProps[] = [
@@ -111,6 +126,13 @@ const coreRoutes: CoreRoutesProps[] = [
                 component: AddNewModerator,
                 access: 1,
                 subMenuTitle: 'Accounts Management'
+            },
+            {
+                path: '/dashboard/admin/archived',
+                component: AccountArchived,
+                access: 1,
+                subMenuTitle: 'Accounts Archived',
+                isNewFeature : true
             }
         ],
         svg: UAMSvg()
@@ -131,14 +153,37 @@ const coreRoutes: CoreRoutesProps[] = [
                 subMenuTitle: 'Section'
             },
             {
-                path: '/dashboard/admin/course',
-                component: Course,
+                path: '/dashboard/admin/course-management',
+                component: CourseManagement,
                 access: 1,
                 hasSubMenus: true,
-                subMenuTitle: 'Courses'
+                subMenuTitle: 'Course Management',
+                isNewFeature: true
             }
         ],
         svg: AcademicSvg()
+    },
+    {
+        path : '/dashboard/admin/categories',
+        title: 'Categories',
+        access: 1,
+        hasSubMenus: false,
+        customSubs: [],
+        subMenuTitle: 'Categories',
+        svg: CategoriesSvg(),
+        component: CategoriesManagement,
+        isNewFeature: true
+    },
+    {
+        path: '/dashboard/admin/subject-management',
+        title: 'Subject Management',
+        access: 1,
+        hasSubMenus: false,
+        customSubs: [],
+        subMenuTitle: 'Subject Management',
+        svg: SubjectSvg(),
+        isNewFeature : true,
+        component: SubjectManagement
     },
     {
         path: '/dashboard/admin/ticket-settings',
@@ -236,35 +281,29 @@ const coreRoutes: CoreRoutesProps[] = [
                 component: AddStudent,
                 access: 2,
                 hasSubMenus: true,
-                subMenuTitle: 'Add Student'
+                subMenuTitle: 'Add Student',
+                isNewFeature: true
+            },
+            {
+                path: '/dashboard/moderator/archived',
+                component: AccountArchived,
+                access: 2,
+                subMenuTitle: 'Accounts Archived',
+                isNewFeature : true
             }
         ],
         svg: AddStudentSvg()
     },
     {
         path: '/dashboard/moderator/academic',
-        title: 'Academic',
-        component: SectionManagement,
+        title: 'My Course',
+        component: MyCourse,
         access: 2,
-        hasSubMenus: true,
+        hasSubMenus: false,
         subMenuTitle: 'Section',
-        customSubs: [
-            {
-                path: '/dashboard/moderator/section',
-                component: SectionManagement,
-                access: 2,
-                hasSubMenus: true,
-                subMenuTitle: 'Section'
-            },
-            {
-                path: '/dashboard/moderator/course',
-                component: Course,
-                access: 2,
-                hasSubMenus: true,
-                subMenuTitle: 'Courses'
-            }
-        ],
-        svg: AcademicSvg()
+        customSubs: [],
+        svg: AcademicSvg(),
+        isBetaTest: true
     },
     {
         path: '/dashboard/moderator/ticketing',

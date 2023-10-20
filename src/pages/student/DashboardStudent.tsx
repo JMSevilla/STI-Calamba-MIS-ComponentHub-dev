@@ -19,6 +19,7 @@ import { useRefreshTokenHandler } from '../../core/hooks/useRefreshTokenHandler'
 import { AlertMessagePlacement } from '../../core/utils/alert-placement'
 import { studentSteps } from '../../core/utils/student-guide'
 import Tour from 'reactour'
+import ControlledModal from '../../components/Modal/Modal'
 
 const DashboardStudent = () => { //might be dynamic based on DB
     const { preload, setPreLoad, gridLoad, setGridLoad, loading, setLoading } = useLoaders()
@@ -27,6 +28,7 @@ const DashboardStudent = () => { //might be dynamic based on DB
     const [violationModal, setViolationModal] = useState(false)
     const [PTAccessToken, setPTAccessToken] = useParticipantAccessToken()
     const [storeGuide, setStoreGuide] = useDoneGuide()
+    const [showNewAccountModal, setShowNewAccountModal] = useState(false)
     const [newAccountDetected, setNewAccountDetected] = useState(false)
     const apiDetectNewAccount = useApiCallback(
       async (api, id: number) => await api.internal.detectNewAccount(id)
@@ -53,8 +55,7 @@ const DashboardStudent = () => { //might be dynamic based on DB
         async (api, args: MeetRoomJoinedProps) => await api.internal.joinedParticipantsLogs(args) 
     )
     const apiGetAllRooms = useApiCallback(
-      async (api, sectionId: number) => 
-      await api.internal.getAllRooms(sectionId)
+        async (api, args: { section: number[] }) => await api.internal.getAllRooms(args)
     )
     function initializedJoinRoom(room_name: string | undefined, room_id: string | undefined, comlabId: string | undefined,
       room_type: string | undefined) {
@@ -98,9 +99,14 @@ const DashboardStudent = () => { //might be dynamic based on DB
           }
       })
   }
+  function mappedSections() {
+    const ms = JSON.parse(references?.multipleSections ?? "")
+    const mapValues = ms?.length > 0 && ms.map((item: any) => item.value)
+    return mapValues
+}
   const { data, refetch } = useQuery({
     queryKey: 'getallrooms',
-    queryFn: () => apiGetAllRooms.execute(references?.section).then(res => {
+    queryFn: () => apiGetAllRooms.execute({ section: mappedSections() }).then(res => {
         const result = res.data?.length > 0 && res.data?.map((item: any) => {
             const isAuthorized = item?.roomAuthorization?.map((auth: any) =>
             auth._meetingAuthorization)
@@ -278,9 +284,11 @@ const DashboardStudent = () => { //might be dynamic based on DB
       if(res.data) {
         setNewAccountDetected(res.data)
         setStoreGuide(res.data)
+        setShowNewAccountModal(res.data)
       } else {
         setNewAccountDetected(false)
         setStoreGuide(false)
+        setShowNewAccountModal(false)
       }
     })
   }
@@ -304,8 +312,46 @@ const DashboardStudent = () => { //might be dynamic based on DB
                       })
                     }
                    </div>
+                   <ControlledModal
+                      open={showNewAccountModal}
+                      handleClose={() => setShowNewAccountModal(false)}
+                      handleDecline={() => setShowNewAccountModal(false)}
+                      buttonTextAccept='Start Tour'
+                      enableDecline={false}
+                      maxWidth='md'
+                      color='success'
+                      handleSubmit={() => setShowNewAccountModal(false)}
+                      >
+                        <div style={{
+                            display: 'flex',
+                            alignContent: 'center',
+                            justifyContent: 'center'
+                        }}>
+                             <img src='/sti.png' alt='logo' style={{
+                        borderRadius: '10px',
+                        width: '100px',
+                        height: '100px'
+                    }} />
+                        </div>
+                        <div style={{
+                            display: 'flex',
+                            alignContent: 'center',
+                            justifyContent: 'center',
+                            marginBottom: '50px'
+                        }}>
+                            <Typography sx={{ fontWeight: 'bold' }} variant='button'>
+                                Cloud-Based Multi-Integrated Monitoring & Ticketing Management System
+                            </Typography>
+                        </div>
+                        <Typography sx={{ fontWeight: 'bold' }} variant='button'>
+                            Welcome, Stier Students!
+                        </Typography> <br />
+                        <Typography sx={{ mt: 3 }} variant='inherit'>
+                        Introducing our cutting-edge Cloud-Based Monitoring System. Join your virtual classes with ease as it provides real-time professor screen monitoring. Our automated detection system ensures a seamless experience. Please note that we're in beta, so your feedback is valuable. Enjoy an enhanced virtual learning journey with us!
+                        </Typography>
+                      </ControlledModal>
                    <Tour 
-                      isOpen={storeGuide}
+                      isOpen={showNewAccountModal ? false : storeGuide}
                       steps={studentSteps}
                       onRequestClose={() => {
                         setStoreGuide(false)
@@ -349,6 +395,7 @@ const DashboardStudent = () => { //might be dynamic based on DB
                       <BaseCard className='initial-student-guide' style={{ marginTop: '20px'}}>
                         {memoizedClassrooms}
                       </BaseCard>
+                      
                     </Container>
                 )
             }

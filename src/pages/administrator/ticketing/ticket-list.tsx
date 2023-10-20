@@ -43,7 +43,7 @@ const TicketList: React.FC = () => {
         await api.internal.filteredTicketsNotifs(id)
     )
     const apiGetAllRooms = useApiCallback(
-        async (api, sectionId: number) => await api.internal.getAllRooms(sectionId)
+        async (api, args: { section: number[] }) => await api.internal.getAllRooms(args)
     )
     const apiDeleteTicketById = useApiCallback(
         async (api, id: string) => await api.internal.deleteTicketById(id)
@@ -290,9 +290,14 @@ const TicketList: React.FC = () => {
             />
         )
     }, [allList, gridLoad, filteredList])
+    function mappedSections() {
+        const ms = JSON.parse(references?.multipleSections ?? "")
+        const mapValues = ms?.length > 0 && ms.map((item: any) => item.value)
+        return mapValues
+    }
     const { data, refetch } = useQuery({
         queryKey: 'getAllRooms',
-        queryFn: () => apiGetAllRooms.execute(references?.section).then(res => {
+        queryFn: () => apiGetAllRooms.execute({ section: mappedSections()}).then(res => {
             const result = res.data?.length > 0 && res.data?.map((item: any) => {
                 return {
                     id: item.room.id,

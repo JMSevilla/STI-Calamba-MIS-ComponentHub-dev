@@ -29,8 +29,8 @@ const StudentAttendance: React.FC = () => {
     const [productivityId, setProductivityId] = useState<string>('')
     const { ToastMessage } = useToastMessage()
     const apistudentAttendanceInitialized = useApiCallback(
-        async (api, section: number | undefined) =>
-        await api.internal.studentAttendanceInitialized(section)
+        async (api, args: { section: number[] }) =>
+        await api.internal.studentAttendanceInitialized(args)
     )
     const apicurrentStudentAttendanceInitialized = useApiCallback(
         async (api, accountId: number | undefined) => 
@@ -58,9 +58,14 @@ const StudentAttendance: React.FC = () => {
     const handleCloseDrawer = () => {
         setMoreOptions(false)
     }
+    function mappedSections() {
+        const ms = JSON.parse(references?.multipleSections ?? "")
+        const mapValues = ms?.length > 0 && ms.map((item: any) => item.value)
+        return mapValues
+    }
     const { refetch } = useQuery({
         queryKey: 'studentReportInitialized',
-        queryFn: () => references?.access_level === 2 ? apistudentAttendanceInitialized.execute(references?.section).then(res => {
+        queryFn: () => references?.access_level === 2 ? apistudentAttendanceInitialized.execute({ section: mappedSections() }).then(res => {
             const result = res.data?.length > 0 && res.data.map((item: any) => {
                 return {
                     id: item.productivity.id,
@@ -392,7 +397,7 @@ const StudentAttendance: React.FC = () => {
             const obj = {
                 from : selectedDateFrom?.toISOString(),
                 to: selectedDateTo?.toISOString(),
-                section: references?.section
+                section: mappedSections()
             }
             apistudentAttendanceFiltering.execute(obj)
             .then((res: AxiosResponse | undefined) => {

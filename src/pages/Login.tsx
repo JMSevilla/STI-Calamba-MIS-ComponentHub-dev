@@ -17,10 +17,11 @@ import { Link } from 'react-router-dom';
 import { reusable_otp_page_identifier } from '../core/atoms/globals-atom';
 import { motion, useAnimation } from 'framer-motion';
 import { useSpring, animated } from 'react-spring';
-import { useAccessToken, useReferences } from '../core/hooks/useStore';
+import { useAccessToken, useDeviceKey, useReferences } from '../core/hooks/useStore';
 export const Login: React.FC = () => {
     const [accessToken, setAccessToken] = useAccessToken()
     const [references, setReferences] = useReferences()
+    const [dk, setDk] = useDeviceKey()
     const [reuseOtp, setReuseOtp] = useAtom(reusable_otp_page_identifier)
     const [loginDetails, setLoginDetails] = useAtom(loginAtom)
     const [load, setLoad] = useState<Boolean>(true)
@@ -39,9 +40,6 @@ export const Login: React.FC = () => {
         resolver: zodResolver(LoginSchema),
         defaultValues: loginDetails
     })
-    const apiCountTotalOpenTickets = useApiCallback(
-      async (api, args: { type: string, section?: number | undefined}) => await api.internal.totalReport(args)
-    )
     const {
         getValues,
         control,
@@ -78,23 +76,16 @@ export const Login: React.FC = () => {
             }
         }
     }
-    function loadWSOD(){
-      apiCountTotalOpenTickets.execute({ type: "total-open-tickets", section: 0 })
-      .then(res => {
-        setwsod(res.data)
-      })
-    }
     const handleSignIn = () => {
         handleSubmit(
             (values) => {
-                login(values.username, values.password)
+                login(values.username, values.password, dk)
             }
         )()
         return false;
     }
     useEffect(() => {
         LoadAccountSetup()
-        loadWSOD()
         // preloadedCooldowns()
     }, [])
     const controls = useAnimation();
@@ -143,7 +134,6 @@ export const Login: React.FC = () => {
               <p className="2xl:px-20">
               Empowering STI College Calamba, Elevating Efficiency and Accountability with MIS - Your Multi-Integrated Computer Monitoring & Ticketing System.
               </p>
-                {wsod}
               <span className="mt-15 inline-block">
                 <svg
                   width="350"

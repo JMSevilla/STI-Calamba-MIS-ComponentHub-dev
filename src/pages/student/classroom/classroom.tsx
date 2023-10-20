@@ -59,8 +59,7 @@ const ClassRoom: React.FC = () => {
         async (api, accountId: number) => await api.internal.checkStudentAuthorization(accountId)
     )
     const apiGetAllRooms = useApiCallback(
-        async (api, sectionId: number) => 
-        await api.internal.getAllRooms(sectionId)
+        async (api, args: { section: number[] }) => await api.internal.getAllRooms(args)
     )
     const apiJoinAsParticipant = useApiCallback(
         async (api, args: JitsiServerProps) =>
@@ -95,9 +94,14 @@ const ClassRoom: React.FC = () => {
             }
         })
     }
+    function mappedSections() {
+        const ms = JSON.parse(references?.multipleSections ?? "")
+        const mapValues = ms?.length > 0 && ms.map((item: any) => item.value)
+        return mapValues
+    }
     const { data, refetch } = useQuery({
         queryKey: 'getallrooms',
-        queryFn: () => apiGetAllRooms.execute(references?.section).then(res => {
+        queryFn: () => apiGetAllRooms.execute({ section : mappedSections() }).then(res => {
             const result = res.data?.length > 0 && res.data?.map((item: any) => {
                 const isAuthorized = item?.roomAuthorization?.map((auth: any) =>
                 auth._meetingAuthorization)

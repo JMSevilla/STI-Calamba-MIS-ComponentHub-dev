@@ -9,6 +9,7 @@ import routes from '../../router/path';
 import { useApiCallback } from '../../core/hooks/useApi';
 import { AxiosResponse } from 'axios';
 import moment from 'moment';
+import { Chip } from '@mui/material';
 
 interface SidebarProps {
     sidebarOpen: boolean;
@@ -78,6 +79,7 @@ export const Sidebar = ({sidebarOpen, setSidebarOpen}: SidebarProps) => {
     function initializedTimeInGetter() {
         apifindproductivity.execute(references?.id)
         .then((res: AxiosResponse | undefined) => {
+            console.log(res?.data)
             res?.data?.length > 0 && res?.data?.map((ti: any) => {
                 console.log(ti)
                 const parsedTime = moment(ti.timeIn, "HH:mm:ss.SSSSSSS")
@@ -175,6 +177,7 @@ export const Sidebar = ({sidebarOpen, setSidebarOpen}: SidebarProps) => {
                                                                     >
                                                                             {item.svg}
                                                                             {item.title}
+                                                                            
                                                                             <svg
                                                                             className={`absolute right-4 top-1/2 -translate-y-1/2 fill-current ${
                                                                                 open && 'rotate-180'
@@ -200,7 +203,7 @@ export const Sidebar = ({sidebarOpen, setSidebarOpen}: SidebarProps) => {
                                                                                     !open && 'hidden'
                                                                                 }`}
                                                                             >
-                                                                                <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-6">
+                                                                                <ul className="mt-4 mb-5.5 flex flex-col gap-2.5 pl-2">
                                                                                     <li>
                                                                                         <NavLink
                                                                                         to={customs.path}
@@ -218,6 +221,11 @@ export const Sidebar = ({sidebarOpen, setSidebarOpen}: SidebarProps) => {
                                                                                         }}
                                                                                         >
                                                                                         {customs.subMenuTitle}
+                                                                                        {
+                                                                                            customs.isNewFeature &&
+                                                                                            <Chip size='small' color='success'
+                                                                                             label='New!' />
+                                                                                        }
                                                                                         </NavLink>
                                                                                     </li>
                                                                                 </ul>
@@ -252,6 +260,12 @@ export const Sidebar = ({sidebarOpen, setSidebarOpen}: SidebarProps) => {
                                                                 
                                                                 {item.svg}
                                                                 {item.title}
+                                                                {item.isNewFeature ? 
+                                                                            <Chip size='small' color='success'
+                                                                            label='New!' />
+                                                                        : item.isBetaTest && 
+                                                                        <Chip size='small' color='warning'
+                                                                        label='BETA!' />}
                                                             </NavLink>
                                                         </li>
                                                     }

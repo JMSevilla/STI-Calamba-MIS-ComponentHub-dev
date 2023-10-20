@@ -1,6 +1,8 @@
 import React from 'react'
 
+
 export const useAvatarConfiguration = () => {
+    
     function stringToColor(string: string) {
         let hash = 0;
         let i;

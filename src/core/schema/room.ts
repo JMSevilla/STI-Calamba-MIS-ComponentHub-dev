@@ -11,7 +11,8 @@ export const BaseCreateRoomSchema = z.object({
     comlabId: z.string(),
     room_link: z.string().optional(),
     room_status: z.number().optional(),
-    room_creator: z.number().optional()
+    room_creator: z.number().optional(),
+    sectionId: z.any()
 })
 
 export const BaseRoomPasswordSchema = z.object({
