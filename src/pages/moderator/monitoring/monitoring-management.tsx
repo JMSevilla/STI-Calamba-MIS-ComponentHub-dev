@@ -28,12 +28,14 @@ import moment from "moment";
 import ControlledModal from "../../../components/Modal/Modal";
 import MoreVertIcon from '@mui/icons-material/MoreVert';
 import React from "react";
+import BasicSelectField from "../../../components/SelectField/BasicSelectField";
+import { ControlledMultipleSelectField } from "../../../components/SelectField/MultiSelectField";
 
 const MonitoringManagement: React.FC = () => {
     const navigate = useNavigate()
     const [references, setReferences] = useReferences()
     const [JAccessToken, setJAccessToken] = useJitsiAccessToken()
-    const [tabsValue, setTabsValue] = useState(1)
+    const [tabsValue, setTabsValue] = useState(0)
     const [comlabList, setComLabList] = useState([])
     const [revokeModal, setRevokeModal] = useState(false)
     const [revokeId, setRevokeId] = useState<string | undefined>(undefined)
@@ -46,6 +48,7 @@ const MonitoringManagement: React.FC = () => {
     const { ToastMessage } = useToastMessage()
     const apiComlabList = useApiCallback(api => api.internal.comlabList())
     const [privateRoom, setPrivateRoom] = useState(false)
+    const [sections, setSections] = useState([])
     const [roomDetails, setRoomDetails] = useState({
         room_name: '',
         comlabId: '',
@@ -80,7 +83,7 @@ const MonitoringManagement: React.FC = () => {
         await api.internal.createNewRoom(args)
     )
     const apiGetAllRooms = useApiCallback(
-        async (api, sectionId: number) => await api.internal.getAllRooms(sectionId)
+        async (api, args: { section: number[] }) => await api.internal.getAllRooms(args)
     )
     const apiJoinedParticipantsLogs = useApiCallback(
         async (api, args: MeetRoomJoinedProps) => await api.internal.joinedParticipantsLogs(args) 
@@ -88,16 +91,49 @@ const MonitoringManagement: React.FC = () => {
     const apiRemoveRevokedRoom = useApiCallback(
         async (api, room_id: string) => await api.internal.removeRoom(room_id)
     )
+    const apiSubjectsList = useApiCallback(
+        async (api, course_id: number) => await api.internal.subjectsListByCourse(course_id)
+    )
+    const apiSectionList = useApiCallback(
+        async (api, course_id: number) => await api.internal.getAllSectionsNonJoined(course_id)
+    )
+    const [subjects, setSubjects] = useState([])
     const useCreateRoom = () => {
         return useMutation((data: CreateRoomInfer) => 
             apicreateroom.execute(data)
         );
     }
+   
     const { mutateAsync } = useCreateRoom()
     const {
         control, getValues, 
-        formState: { isValid }, handleSubmit, reset
+        formState: { isValid }, handleSubmit, reset,
+        watch
     } = form;
+    function mappedSections() {
+        const ms = JSON.parse(references?.multipleSections ?? "")
+        const mapValues = ms?.length > 0 && ms.map((item: any) => item.value)
+        return mapValues
+    }
+    function initializedSubjects(){
+        const values = getValues()
+        if(values.sectionId !== undefined || values.sectionId?.length > 0) {
+        apiSubjectsList.execute(
+            values.sectionId?.length > 0 ? values.sectionId[0]?.value : 0
+        )
+        .then((res) => {
+            const result = res.data?.length > 0 && res.data.map((item: any) => {
+                return {
+                    label: item.subjectName,
+                    value: item.subjectName
+                }
+            })
+            setSubjects(result)
+        })
+        }
+       
+    }
+    const trackSectionSelection = watch('sectionId')
     const values = getValues()
     const {
         preload, setPreLoad, gridLoad, setGridLoad
@@ -110,11 +146,11 @@ const MonitoringManagement: React.FC = () => {
     const handleChangeTabsValue = (event: React.SyntheticEvent, newValue: number) => {
         setTabsValue(newValue)
     }
-      const open = Boolean(anchorEl);
-      const id = open ? 'simple-popover' : undefined;
+    const open = Boolean(anchorEl);
+    const id = open ? 'simple-popover' : undefined;
     const { data, refetch } = useQuery({
         queryKey: 'getAllRooms',
-        queryFn: () => apiGetAllRooms.execute(references?.section).then(res => {
+        queryFn: () => apiGetAllRooms.execute({ section: mappedSections() }).then(res => {
             const result = res.data?.length > 0 && res.data?.map((item: any) => {
                 return {
                     id: item.room.id,
@@ -168,7 +204,7 @@ const MonitoringManagement: React.FC = () => {
             let concat = values.room_name.replace(/\s+/g, "+")
             const findRoute: any = routes.find((route) => route.access === references?.access_level && route.path.includes('/dashboard/moderator/meet'))?.path
             setLoading(!loading)
-            const obj: CreateRoomInfer & { sectionId?: number | undefined } = {
+            const obj: CreateRoomInfer = {
                 room_name: values.room_name,
                 room_type: values.room_type,
                 room_password: values.room_password,
@@ -179,7 +215,7 @@ const MonitoringManagement: React.FC = () => {
                 comlabId: values.comlabId,
                 numbers_of_joiners: 0,
                 email: references?.email,
-                sectionId: references?.section
+                sectionId: JSON.stringify(values.sectionId)
             }
             await mutateAsync(obj, {
                 onSuccess: (response: AxiosResponse | undefined) => {
@@ -416,7 +452,7 @@ const MonitoringManagement: React.FC = () => {
             {
                 field: 'numbers_of_joiners',
                 headerName: 'Participants',
-                width: 150
+                width: 80
             },
             {
                 field: 'room_status',
@@ -447,7 +483,7 @@ const MonitoringManagement: React.FC = () => {
             {
                 field: 'created_at',
                 headerName: 'Created',
-                width: 150,
+                width: 200,
                 valueGetter: (params: any) => `${moment(params.row.created_at).calendar()}`
             },
             {
@@ -509,10 +545,29 @@ const MonitoringManagement: React.FC = () => {
             />
         )
     }, [gridLoad, data])
+    function initializedSectionsByCourse() {
+        apiSectionList.execute(references?.course)
+            .then((res) => {
+                const result = res.data?.length > 0 && res.data.map((item: any) => {
+                    return {
+                        label: item.sectionName,
+                        value: item.course_id
+                    }
+                })
+                setSections(result)
+        })
+    }
     useEffect(() => {
         setGridLoad(false)
         refetch()
     }, [data])
+    useEffect(() => {
+        initializedSectionsByCourse()
+        
+    }, [])
+    useEffect(() => {
+        initializedSubjects()
+    }, [trackSectionSelection])
     return (
         <>
             {
@@ -551,12 +606,21 @@ const MonitoringManagement: React.FC = () => {
                                             Here you can create room for your class 
                                         </Typography>
                                         <FormProvider {...form}>
-                                            <ControlledTextField 
+                                            <ControlledMultipleSelectField 
+                                                control={control}
+                                                name='sectionId'
+                                                options={sections}
+                                                label='Select sections'
+                                                shouldUnregister
+                                                required
+                                            />
+                                            <ControlledSelectField 
                                                 control={control}
                                                 name='room_name'
                                                 shouldUnregister
                                                 required
-                                                label='Room name'
+                                                label='Select subject'
+                                                options={subjects}
                                             />
                                             <ControlledSelectField 
                                                 control={control}

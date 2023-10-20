@@ -43,6 +43,8 @@ import routes from '../../../router/path'
 import { useNavigate } from 'react-router-dom'
 import { BasicSwitch } from '../../../components/Switch/BasicSwitch'
 import { useGenerationPassword } from '../../../core/hooks/useGenerationPassword'
+import ArchiveIcon from '@mui/icons-material/Archive';
+import { ControlledMultipleSelectField } from '../../../components/SelectField/MultiSelectField'
 const options = {
     dictionary: {
         ...zxcvbnCommonPackage.dictionary,
@@ -200,8 +202,9 @@ const AddNewModerator = () => {
     const {
         formState: { isValid },
         handleSubmit, control,
-        reset, resetField
+        watch, getValues, reset, resetField
     } = form;
+    const guardCourseId = watch('course_id')
     const [courses, setCourses] = useState([])
     const [sections, setSections] = useState([])
     const { preload, setPreLoad, loading, setLoading, gridLoad, setGridLoad } = useLoaders()
@@ -210,7 +213,9 @@ const AddNewModerator = () => {
     const apiAccountSentToArchive = useApiCallback(
         async (api, id: number) => await api.internal.accountDisabling(id)
     )
-    const apiSectionList = useApiCallback(api => api.internal.getAllSectionsNonJoined())
+    const apiSectionList = useApiCallback(
+        async (api, course_id: number) => await api.internal.getAllSectionsNonJoined(course_id)
+    )
     const apiCreateModerator = useApiCallback(
         async (api, args: AccountModeratorProps) => await api.auth.createModerator(args)
     )
@@ -219,6 +224,9 @@ const AddNewModerator = () => {
     )
     const apiResendOtp = useApiCallback(
         async (api, args: { email: string | undefined }) => await api.internal.accountResendOtp(args)
+    )
+    const apiArchiveAccount = useApiCallback(
+        async (api, accountId: number) => await api.internal.accountArchive(accountId)
     )
     const useAccountDeletionSentToArchive =  useMutation((id: number) => (
         apiAccountSentToArchive.execute(id)
@@ -353,6 +361,24 @@ const AddNewModerator = () => {
     function viewProfile(accountId: number) {
         const findRoute: any = routes.find((route) => route.access === references?.access_level && route.path.includes('/dashboard/admin/profile-details'))?.path
         navigate(`${findRoute}?accountid=${accountId}`) 
+    }
+    function ArchiveAccount(accountId: number) {
+        apiArchiveAccount.execute(accountId).then(res => {
+            if(res.data === 200) {
+                refetch()
+                ToastMessage(
+                    "Successfully archived account",
+                    "top-right",
+                    false,
+                    true,
+                    true,
+                    true,
+                    undefined,
+                    "dark",
+                    "success"
+                )
+            }
+        })
     }
     const memoizedDataGrid = useMemo(() => {
         const columns = [
@@ -504,6 +530,11 @@ const AddNewModerator = () => {
                                 <Tooltip title='View profile'>
                                     <IconButton onClick={() => viewProfile(params.row.id)} color='primary' size='small'>
                                         <AccountCircleIcon />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title='Archive Account'>
+                                    <IconButton onClick={() => ArchiveAccount(params.row.id)} color='primary' size='small'>
+                                        <ArchiveIcon />
                                     </IconButton>
                                 </Tooltip>
                             </div>
@@ -674,6 +705,11 @@ const AddNewModerator = () => {
                                         <AccountCircleIcon />
                                     </IconButton>
                                 </Tooltip>
+                                <Tooltip title='Archive Account'>
+                                    <IconButton onClick={() => ArchiveAccount(params.row.id)} color='primary' size='small'>
+                                        <ArchiveIcon />
+                                    </IconButton>
+                                </Tooltip>
                             </div>
                         )
                     }
@@ -689,16 +725,6 @@ const AddNewModerator = () => {
             />
         )
     }, [studentList, gridLoad])
-    function courseList() {
-        Promise.all([
-            apiCourseList.execute().then(res => res.data),
-            apiSectionList.execute().then(res => res.data)
-        ]).then(res => {
-            setCourses(res[0])
-            setSections(res[1])
-
-        })
-    }
     const useCreateModerator = () => {
         return useMutation( async (data: AccountModeratorProps) => 
             await apiCreateModerator.execute(data)
@@ -706,7 +732,6 @@ const AddNewModerator = () => {
     }
     const { mutateAsync } = useCreateModerator()
     useEffect(() => {
-        courseList()
         InitializedStudentList(0)
     }, [])
     useEffect(() => {
@@ -727,8 +752,9 @@ const AddNewModerator = () => {
                     password: values.password,
                     mobileNumber: values.mobileNumber,
                     course_id: creationType ? "0" : values.course_id,
-                    section: creationType ? "0" : values.section,
-                    type: creationType ? 1 : 2
+                    section: creationType ? "0" : "0",
+                    type: creationType ? 1 : 2,
+                    multipleSections: JSON.stringify(values.section)
                 }
                 await mutateAsync(objModerator, {
                     onSuccess: (res: AxiosResponse | undefined) => {
@@ -790,21 +816,18 @@ const AddNewModerator = () => {
     }
     function courseAndSectionList() {
         Promise.all([
-            apiCourseList.execute().then(res => res.data),
-            apiSectionList.execute().then(res => res.data)
+            apiCourseList.execute().then(res => res.data)
         ]).then(res => {
-            if(res[0]?.length <= 0 || res[1]?.length <= 0) {
+            if(res[0]?.length <= 0) {
                 setCourses([])
-                setSections([])
             } else {
-                const sectionMapping = res[1]?.length > 0 && res[1].map((item: any) => {
+                const result = res[0]?.length > 0 && res[0].map((ac: any) => {
                     return {
-                        value: item.id,
-                        label: item.sectionName
+                        label: ac.courseName,
+                        value: ac.id
                     }
                 })
-                setCourses(res[0])
-                setSections(sectionMapping)
+                setCourses(result)
             }
         })
     }
@@ -818,6 +841,26 @@ const AddNewModerator = () => {
     const handleChangeCreationType = (event: React.ChangeEvent<HTMLInputElement>) => {
         setCreationType(event.target.checked)
     }
+    function initializedSectionsByCourse() {
+        const values = getValues()
+        if(values.course_id === undefined) {
+            return;
+        } else {
+            apiSectionList.execute(parseInt(values.course_id))
+            .then((res) => {
+                const result = res.data?.length > 0 && res.data.map((item: any) => {
+                    return {
+                        label: item.sectionName,
+                        value: item.id
+                    }
+                })
+                setSections(result)
+            })
+        }
+    }
+    useEffect(() => {
+        initializedSectionsByCourse()
+    }, [guardCourseId])
     return (
         <>
             {
@@ -898,7 +941,7 @@ const AddNewModerator = () => {
                                                         <h3 className="font-medium text-black dark:text-white">
                                                             Section Assignation
                                                         </h3>
-                                                        <ControlledSelectField 
+                                                        <ControlledMultipleSelectField 
                                                             control={control}
                                                             name='section'
                                                             options={sections}

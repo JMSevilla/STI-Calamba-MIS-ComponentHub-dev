@@ -65,6 +65,9 @@ export const DropdownNotification = () => {
         navigate(findRoute)
         setDropdownOpen(false)
     }
+    const sortedNotifications = [...notifications].sort((a: any, b: any) => {
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+    })
     return (
         <>
             {references?.access_level !== 3 &&
@@ -113,7 +116,7 @@ export const DropdownNotification = () => {
                 <ul className="flex h-auto flex-col overflow-y-auto">
                     {
                         references?.access_level === 1 && notifications.length > 0 
-                        ? notifications.map((item: any) => (
+                        ? sortedNotifications.map((item: any) => (
                             <li>
                                 <div
                                 className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"
@@ -144,7 +147,7 @@ export const DropdownNotification = () => {
                             </li>
                         ))
                         : references?.access_level === 2 && notifications.length > 0
-                         ? notifications.map((item: any) => (
+                         ? sortedNotifications.map((item: any) => (
                             <li>
                                 <div
                                 className="flex flex-col gap-2.5 border-t border-stroke px-4.5 py-3 hover:bg-gray-2 dark:border-strokedark dark:hover:bg-meta-4"

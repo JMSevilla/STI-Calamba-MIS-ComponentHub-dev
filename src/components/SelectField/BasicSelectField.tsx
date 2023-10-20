@@ -11,6 +11,7 @@ interface SelectSmallProps {
   value: string | number;
   onChange: (value: any) => void;
   disabled?: boolean
+
 }
 
 const BasicSelectField: React.FC<SelectSmallProps> = ({ label, options, value, onChange, disabled }) => {
@@ -19,7 +20,7 @@ const BasicSelectField: React.FC<SelectSmallProps> = ({ label, options, value, o
   };
 
   return (
-    <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+    <FormControl sx={{ m: 1, minWidth: 220 }} size="small">
       <InputLabel id="select-small-label">{label}</InputLabel>
       <Select
         disabled={disabled}

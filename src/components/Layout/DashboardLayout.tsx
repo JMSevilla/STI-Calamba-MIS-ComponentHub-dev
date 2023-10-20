@@ -5,12 +5,30 @@ import { Header } from "../Header/Header";
 import { useAuthContext } from "../../core/context/AuthContext";
 import { useToastMessage } from "../../core/context/ToastContext";
 import { useApiCallback } from "../../core/hooks/useApi";
-import { useReferences } from "../../core/hooks/useStore";
+import { useDeviceKey, useReferences } from "../../core/hooks/useStore";
 import ControlledModal from "../Modal/Modal";
 import { Typography } from "@mui/material";
+import { useLoaders } from "../../core/context/LoadingContext";
+import LoadBackdrop from "../Backdrop/Backdrop";
 
 const DashboardLayout: React.FC = () => {
     const [sidebarOpen, setSidebarOpen] = useState<boolean>(false)
+    const [signinReq, setSignInReq] = useState<boolean>(false)
+    const [store, setStore] = useDeviceKey()
+    const apicheckSignInRequest = useApiCallback(
+        async (api, accountId: number) => await api.auth._checkSigninRequest(accountId)
+    )
+    const apiApproveSignInRequest = useApiCallback(
+        async (api, args: {
+            accountId: number
+        }) => await api.auth._approveSigninRequest(args)
+    )
+    const apiRejectSignInRequest = useApiCallback(
+        async (api, args:{
+            accountId: number
+        }) => await api.auth._rejectSigninRequest(args)
+    )
+    const { loading, setLoading } = useLoaders()
     const { expirationTime, AlertTracker, FormatExpiry, logout
     } = useAuthContext()
     const [references, setReferences] = useReferences()
@@ -25,6 +43,20 @@ const DashboardLayout: React.FC = () => {
     const {
         ToastMessage
     } = useToastMessage()
+    function trackSigninRequest(){
+        apicheckSignInRequest.execute(references?.id)
+        .then(res => {
+            console.log("signin request", res.data)
+            setSignInReq(res.data)
+        })
+    }
+    useEffect(() => {
+        trackSigninRequest()
+        const intervalId = setInterval(trackSigninRequest, 5000)
+        return () => {
+            clearInterval(intervalId)
+        }
+    }, [signinReq])
     function watchDisabledAccount(){
         apiWatchDisabledAccount.execute(references?.id)
         .then(res => {
@@ -51,6 +83,40 @@ const DashboardLayout: React.FC = () => {
         watchDisabledAccount()
         watchAccountNotVerified()
     }, [accountDisabled, accountNotVerified])
+    function ApproveSignin(){
+        setSignInReq(false)
+        setLoading(!loading)
+        apiApproveSignInRequest.execute({
+            accountId : references?.id ?? 0
+        })
+        .then(res => {
+            if(res.data === 200) {
+                setLoading(false)
+                logout()
+            } else {
+                setLoading(false)
+            }
+        })
+    }
+    function RejectSignin() {
+        setSignInReq(false)
+        setLoading(!loading)
+        apiRejectSignInRequest.execute({
+            accountId: references?.id ?? 0
+        }).then(res => {
+            if(res.data?.status === 200 || res.data?.message === "REJECTED") {
+                setLoading(false)
+                trackSigninRequest()
+                setSignInReq(false)
+            } else {
+                setLoading(false)
+                setSignInReq(false)
+            }
+        })
+    }
+    useEffect(() => {
+        setLoading(false)
+    }, [])
     return (
         <div className="dark:bg-boxdark-2 dark:text-bodydark">
             <div className="flex h-screen overflow-hidden">
@@ -67,6 +133,23 @@ const DashboardLayout: React.FC = () => {
                                 )
                             }
                             <Outlet />
+                            <ControlledModal
+                            open={signinReq}
+                            maxWidth='sm'
+                            buttonTextAccept="APPROVE"
+                            buttonTextDecline="DECLINE"
+                            color='success'
+                            handleSubmit={ApproveSignin}
+                            handleDecline={RejectSignin}
+                            >
+                                <Typography variant='button'>
+                                    Sign-In request has been received
+                                </Typography>
+                                <br />
+                                <Typography variant='caption'>
+                                    You are trying to sign-in to another device. Once approved you will automatically logout
+                                </Typography>
+                            </ControlledModal>
                             <ControlledModal
                             disableButton
                             title='Account Disabled'
@@ -87,6 +170,7 @@ const DashboardLayout: React.FC = () => {
                     </footer>
                 </div>
             </div>
+            <LoadBackdrop open={loading} />
         </div>
     )
 }

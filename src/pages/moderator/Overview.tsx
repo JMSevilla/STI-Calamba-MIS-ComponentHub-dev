@@ -26,17 +26,19 @@ const ModeratorDashboardOverview = () => { //might be dynamic based on DB
         setTimeout(() => setPreLoad(false), 2000)
     }, [])
     const apiCountTotalOpenTickets = useApiCallback(
-      async (api, args: { type: string, section?: number | undefined}) => await api.internal.totalReport(args)
+      async (api, args: { type: string, section?: number[] }) => await api.internal.totalReport(args)
     )
     const apiDetectNewAccount = useApiCallback(
       async (api, id: number) => await api.internal.detectNewAccount(id)
     )
     function initializedCountReports() {
+      const ms = JSON.parse(references?.multipleSections ?? "")
+      const mapValues = ms?.length > 0 && ms.map((item: any) => item.value)
       Promise.all([
-        apiCountTotalOpenTickets.execute({type: "total-open-tickets", section: 0}).then(res => res.data),
-        apiCountTotalOpenTickets.execute({ type: "total-inprogress-tickets", section: 0 }).then(res => res.data),
-        apiCountTotalOpenTickets.execute({ type: "total-completed-tickets", section: 0 }).then(res => res.data),
-        apiCountTotalOpenTickets.execute({ type: "total-students", section: references?.section }).then(res => res.data)
+        apiCountTotalOpenTickets.execute({type: "total-open-tickets", section: [0]}).then(res => res.data),
+        apiCountTotalOpenTickets.execute({ type: "total-inprogress-tickets", section: [0] }).then(res => res.data),
+        apiCountTotalOpenTickets.execute({ type: "total-completed-tickets", section: [0] }).then(res => res.data),
+        apiCountTotalOpenTickets.execute({ type: "total-students", section: mapValues }).then(res => res.data)
       ]).then((res) => {
         setTotalOpenTickets(res[0])
         setTotalInprogressTickets(res[1])

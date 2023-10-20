@@ -23,6 +23,7 @@ import storage from '../../core/utils/firebaseConfig'
 import { getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage'
 import { useAuthContext } from '../../core/context/AuthContext'
 import { useAvatarConfiguration } from '../../core/hooks/useAvatarConfiguration'
+import { BasicStyledBadge } from '../../components/Badge/StyledBadge'
 const Profile: React.FC = () => {
     const [profileInfo , setProfileInfo] = useAtom(ProfileAtom) 
     const [security, setSecurity] = useAtom(SecurityAndPasswordAtom)
@@ -280,7 +281,9 @@ const Profile: React.FC = () => {
                                     section: data.section,
                                     username: data.username,
                                     email: data.email,
-                                    verified: data.verified
+                                    verified: data.verified,
+                                    course: data.course,
+                                    multipleSections: data.multipleSections
                                 }
                                 setReferences(compressed)
                             })
@@ -367,7 +370,9 @@ const Profile: React.FC = () => {
                                         section: data.section,
                                         username: data.username,
                                         email: data.email,
-                                        verified: data.verified
+                                        verified: data.verified,
+                                        course: data.course,
+                                        multipleSections: data.multipleSections
                                     }
                                     setReferences(compressed)
                                 })
@@ -440,7 +445,9 @@ const Profile: React.FC = () => {
                         section: data.section,
                         username: data.username,
                         email: data.email,
-                        verified: data.verified
+                        verified: data.verified,
+                        course: data.course,
+                        multipleSections: data.multipleSections
                     }
                     setReferences(compressed)
                     setLoading(false)

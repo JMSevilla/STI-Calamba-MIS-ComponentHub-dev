@@ -20,12 +20,12 @@ import { zxcvbn, zxcvbnOptions } from "@zxcvbn-ts/core";
 import * as zxcvbnCommonPackage from "@zxcvbn-ts/language-common";
 import { usePreviousValue } from '../../core/hooks/usePreviousValue'
 import { ControlledMobileNumberField } from '../../components/TextField/MobileNumberField'
-import { AccountModeratorProps, AccountSetupProps, AccountStudentProps } from '../../core/types'
+import { AccountModeratorProps, AccountSetupProps, AccountStudentProps, SubjectStartAssignation } from '../../core/types'
 import { useMutation, useQuery } from 'react-query'
 import { AxiosError, AxiosResponse } from 'axios'
 import { useToastMessage } from '../../core/context/ToastContext'
 import { ControlledTabs } from '../../components/Tabs/Tabs'
-import { Typography, IconButton, Button, Tooltip } from '@mui/material'
+import { Typography, IconButton, Button, Tooltip, Card, CardHeader, Checkbox, Divider, List, ListItem, ListItemIcon, ListItemText, Grid, Avatar, TextField, Pagination } from '@mui/material'
 import { ProjectTable } from '../../components/DataGrid/ProjectTable'
 import TimeRangePicker from '@wojtekmaj/react-timerange-picker';
 // icons
@@ -35,13 +35,18 @@ import DoNotDisturbIcon from '@mui/icons-material/DoNotDisturb';
 import { useReferences } from '../../core/hooks/useStore'
 import RotateLeftIcon from '@mui/icons-material/RotateLeft';
 import ControlledModal from '../../components/Modal/Modal'
-import { StudentCreation, studentSubSchema } from '../../core/schema/student'
+import { AssignationSubjectsInfer, StudentCreation, studentSubSchema } from '../../core/schema/student'
 import { StudentAtom } from '../../core/atoms/account-setup-atom'
 import { DateRangePicker } from 'react-date-range'
 import { useGenerationPassword } from '../../core/hooks/useGenerationPassword'
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import routes from '../../router/path'
 import { useNavigate } from 'react-router-dom'
+import { Check, CheckBox, LegendToggle } from '@mui/icons-material'
+import BasicSelectField from '../../components/SelectField/BasicSelectField'
+import { useAvatarConfiguration } from '../../core/hooks/useAvatarConfiguration'
+import ArchiveIcon from '@mui/icons-material/Archive';
+import { ControlledMultipleSelectField } from '../../components/SelectField/MultiSelectField'
 const options = {
     dictionary: {
         ...zxcvbnCommonPackage.dictionary,
@@ -167,16 +172,158 @@ const AddNewStudentForm = () => {
 }
 type ValuePiece = Date | string | null;
 
+type Transfering = {
+    categoryId: string,
+    courseId: number,
+    created_at: Date,
+    description: string,
+    id: string,
+    subjectArea: string,
+    subjectName: string,
+    units: number,
+    updated_at: Date
+    accountId: number
+}
+
+function not(a: any, b: any) {
+    return a.filter((value: any) => b.indexOf(value) === -1);
+  }
+  
+  function intersection(a: any, b: any) {
+    return a.filter((value:any) => b.indexOf(value) !== -1);
+  }
+  
+  function union(a: any, b: any) {
+    return [...a, ...not(b, a)];
+  }
 
 const AddNewStudent = () => {
     const [studentDetails, setStudentDetails] = useAtom(StudentAtom)
     const [tabsValue, setTabsValue] = useState(0)
     const [references, setReferences] = useReferences()
     const [open, setOpen] = useState<boolean>(false)
+    const [checked, setChecked] = useState<any>([]);
+    const [left, setLeft] = useState<any>([]) // left
+    const [right, setRight] = useState<any>([]) //right
     const [accountDeletionId, setAccountDeletionId] = useState<number>(0)
     const apiAccountList = useApiCallback(
         async (api, args: number[]) => await api.internal.accountList(args)
     )
+    const apiAssignedSubjectsByCourse = useApiCallback(
+        async (api, args: {courseId: number,
+            accountId: number[] }) =>
+            await api.internal.assignedSubjectByCourse(args)
+    )
+    const apiDismantleSubjectToStudents = useApiCallback(
+        async (api, subjectId: string) =>
+        await api.internal.dismantleSubjectsToStudents(subjectId)
+    )
+    const leftChecked = intersection(checked, left);
+    const rightChecked = intersection(checked, right);
+  
+    const handleToggle = (value: any) => () => {
+      const currentIndex = checked.indexOf(value);
+      const newChecked = [...checked];
+  
+      if (currentIndex === -1) {
+        newChecked.push(value);
+      } else {
+        newChecked.splice(currentIndex, 1);
+      }
+  
+      setChecked(newChecked);
+    };
+  
+    const numberOfChecked = (items: any) =>
+      intersection(checked, items).length;
+  
+    const handleToggleAll = (items: any) => () => {
+      if (numberOfChecked(items) === items.length) {
+        setChecked(not(checked, items));
+      } else {
+        setChecked(union(checked, items));
+      }
+    };
+    async function startSubjectAssignation(){
+        setLoading(true)
+        const selectedItems = left.filter((item: any) => leftChecked.includes(item))
+        for(const subjectLeft of selectedItems){
+            for(const ac of accounts) {
+                const obj: SubjectStartAssignation = {
+                    accountId: ac,
+                    courseId: subjectLeft.courseId,
+                    subjectId: subjectLeft.id
+                }
+                await apiStartSubjectAssignation.execute(obj)
+                .then((res) => {
+                    if(res.data === 400) {
+                        setLoading(false)
+                        ToastMessage(
+                            "Subject already exists on this account",
+                            "top-right",
+                            false,
+                            true,
+                            true,
+                            true,
+                            undefined,
+                            "dark",
+                            "error"
+                        )
+                    } else {
+                        setLoading(false)
+                        ToastMessage(
+                            "Successfully Assigned Subject",
+                            "top-right",
+                            false,
+                            true,
+                            true,
+                            true,
+                            undefined,
+                            "dark",
+                            "success"
+                        )
+                    }
+                })
+            }
+        }
+    }
+    function startDismantlingSubjectsToStudents(){
+        setLoading(true)
+        const selectedItems = right.filter((item: any) => rightChecked.includes(item))
+        console.log(selectedItems)
+        selectedItems?.length > 0 && selectedItems.map((dismantle: any) => {
+            apiDismantleSubjectToStudents.execute(dismantle.id)
+            .then((res: any) => {
+                if(res.data === 200) {
+                    setLoading(false)
+                    ToastMessage(
+                        "Subject successfully unassigned",
+                        "top-right",
+                        false,
+                        true,
+                        true,
+                        true,
+                        undefined,
+                        "dark",
+                        "success"
+                    )
+                }
+            })
+        })
+    }
+    const handleCheckedRight = () => {
+      setRight(right.concat(leftChecked));
+      setLeft(not(left, leftChecked));
+      setChecked(not(checked, leftChecked));
+      startSubjectAssignation()
+    };
+  
+    const handleCheckedLeft = () => {
+        setLeft(left.concat(rightChecked));
+        setRight(not(right, rightChecked));
+      setChecked(not(checked, rightChecked));
+      startDismantlingSubjectsToStudents()
+    };
     const {
         data, refetch, 
     } = useQuery({
@@ -188,32 +335,71 @@ const AddNewStudent = () => {
         resolver: zodResolver(studentSubSchema),
         defaultValues: studentDetails ?? { hasNoMiddleName : false }
     })
+    const courseselection = useForm<AssignationSubjectsInfer>({
+        mode:'all',
+        resolver: zodResolver(right),
+        defaultValues: { course_id : "0" }
+    })
     const {
         formState: { isValid },
         handleSubmit, control,
-        reset, resetField, setValue, getValues
+        reset, resetField, setValue, getValues, watch
     } = form;
+    const guardCourseId = watch('course_id')
+    const [selectedCourse, setSelectedCourse] = useState('')
+    const itemsPerPage = 1; // Number of items to display per page
+    const [page, setPage] = useState(1);
+    const [selectedSection, setSelectedSection] = useState('')
+    const scanSelectedCourse = courseselection.watch('course_id')
     const [courses, setCourses] = useState([])
+    const [accounts, setAccounts] = useState<number[]>([])
+    const [studentCourses, setStudentCourses] = useState([])
     const [sections, setSections] = useState([])
+    const [assignedSections, setAssignedSections] = useState([])
+    const [students, setStudents] = useState([])
     const { preload, setPreLoad, loading, setLoading, gridLoad, setGridLoad } = useLoaders()
     const { ToastMessage } = useToastMessage()
     const apiCourseList = useApiCallback(api => api.internal.getAllCoursesNonJoined())
     const apiAccountSentToArchive = useApiCallback(
         async (api, id: number) => await api.internal.accountDisabling(id)
     )
-    const apiSectionList = useApiCallback(api => api.internal.getAllSectionsNonJoined())
+    const apiAccountsByCourse = useApiCallback(
+        async (api, args: {
+            courseId: number,
+            section_id: number
+        }) => await api.internal.accountsByCourse(args)
+    )
+    const [search, setSearch] = useState('')
     const apiCreateStudent = useApiCallback(
         async (api, args: AccountStudentProps) => await api.auth.createStudent(args)
+    )
+    const apiSelectedSubjectByCourse = useApiCallback(
+        async (api, args:{
+            courseId: number,
+            accountId: number[]
+        }) => await api.internal.selectedSubjectByCourse(args)
     )
     const apiRecoverFromArchive = useApiCallback(
         async (api, id: number) => await api.internal.accountRecoverFromArchive(id)
     )
+    const apiSectionList = useApiCallback(
+        async (api, course_id: number) => await api.internal.getAllSectionsNonJoined(course_id)
+    )
     const apiResendOtp = useApiCallback(
         async (api, args: { email: string | undefined }) => await api.internal.accountResendOtp(args)
+    )
+    const apiStartSubjectAssignation = useApiCallback(
+        async (api, args: SubjectStartAssignation) =>
+        await api.internal.startSubjectAssignation(args) 
     )
     const useAccountDeletionSentToArchive =  useMutation((id: number) => (
         apiAccountSentToArchive.execute(id)
     ))
+
+    const apiCourseManagementList = useApiCallback(api => api.internal.coursemanagementList())
+    const apiArchiveAccount = useApiCallback(
+        async (api, accountId: number) => await api.internal.accountArchive(accountId)
+    )
     const triggerAccountDeletionToArchive = (id: number) => {
         setOpen(!open)
         setAccountDeletionId(id)
@@ -318,6 +504,24 @@ const AddNewStudent = () => {
         const findRoute: any = routes.find((route) => route.access === references?.access_level && route.path.includes('/dashboard/moderator/profile-details'))?.path
         navigate(`${findRoute}?accountid=${accountId}`) 
     }
+    function ArchiveAccount(accountId: number) {
+        apiArchiveAccount.execute(accountId).then(res => {
+            if(res.data === 200) {
+                refetch()
+                ToastMessage(
+                    "Successfully archived account",
+                    "top-right",
+                    false,
+                    true,
+                    true,
+                    true,
+                    undefined,
+                    "dark",
+                    "success"
+                )
+            }
+        })
+    }
     const memoizedDataGrid = useMemo(() => {
         const columns = [
             {
@@ -416,7 +620,7 @@ const AddNewStudent = () => {
                                 {
                                     params.row.status === 1 ?
                                     <IconButton onClick={() => triggerAccountDeletionToArchive(params.row.id)} color='error' size='small'>
-                                        <DeleteIcon />
+                                        <DoNotDisturbIcon />
                                     </IconButton>
                                     :
                                     <IconButton onClick={() => handleRecoverAccount(params.row.id)} color='primary' size='small'>
@@ -432,6 +636,11 @@ const AddNewStudent = () => {
                                 <Tooltip title='View profile'>
                                     <IconButton onClick={() => viewProfile(params.row.id)} color='primary' size='small'>
                                         <AccountCircleIcon />
+                                    </IconButton>
+                                </Tooltip>
+                                <Tooltip title='Archive Account'>
+                                    <IconButton onClick={() => ArchiveAccount(params.row.id)} color='primary' size='small'>
+                                        <ArchiveIcon />
                                     </IconButton>
                                 </Tooltip>
                             </div>
@@ -453,12 +662,35 @@ const AddNewStudent = () => {
         )
     }, [data, gridLoad])
     function courseList() {
-        Promise.all([
-            apiCourseList.execute().then(res => res.data),
-            apiSectionList.execute().then(res => res.data)
-        ]).then(res => {
-            setCourses(res[0])
-            setSections(res[1])
+        apiCourseManagementList.execute()
+        .then(res => {
+            if(res.data?.length > 0){
+                const result = res.data.map((item: any) => {
+                    return {
+                        label: item.courseName,
+                        value: item.id
+                    }
+                })
+                setCourses(result)
+            } else {
+                setCourses([])
+            }
+        })
+    }
+    function assignationCourseList() {
+        apiCourseManagementList.execute()
+        .then(res => {
+            if(res.data?.length > 0){
+                const result = res.data.map((item: any) => {
+                    return {
+                        label: item.courseName,
+                        value: item.id
+                    }
+                })
+                setStudentCourses(result)
+            } else {
+                setStudentCourses([])
+            }
         })
     }
     const useCreateStudent = () => {
@@ -469,12 +701,14 @@ const AddNewStudent = () => {
     const { mutateAsync } = useCreateStudent()
     useEffect(() => {
         courseList()
+        assignationCourseList()
     }, [])
     useEffect(() => {
         setPreLoad(false)
         setGridLoad(false)
         setLoading(false)
     }, [])
+    const { stringAvatarColumns } = useAvatarConfiguration()
     const handleSubmission = () => {
         handleSubmit(
             async (values) => {
@@ -488,7 +722,8 @@ const AddNewStudent = () => {
                     password: values.password,
                     mobileNumber: values.mobileNumber,
                     course_id: values.course_id,
-                    section: values.section
+                    section: references?.section,
+                    multipleSections: JSON.stringify(values.section)
                 }
                 await mutateAsync(objStudent, {
                     onSuccess: async (res: AxiosResponse | undefined) => {
@@ -549,6 +784,199 @@ const AddNewStudent = () => {
     const handleChangeTabsValue = (event: React.SyntheticEvent, newValue: number) => {
         setTabsValue(newValue)
     }
+    function handleChangeSearch(event: any) {
+        setSearch(event.currentTarget.value)
+    }
+    
+    const customList = (title: React.ReactNode, items: readonly Transfering[]) => {
+        return (
+            <Card sx={{ mt: 2 }}>
+                <CardHeader
+                    sx={{ px: 2, py: 1 }}
+                    avatar={
+                        <Checkbox 
+                            onClick={handleToggleAll(items)}
+                            checked={numberOfChecked(items) === items.length && items.length !== 0}
+                            indeterminate={
+                                numberOfChecked(items) !== items.length && numberOfChecked(items) !== 0
+                            }
+                            disabled={items.length === 0}
+                            inputProps={{
+                                'aria-label' : 'all items selected'
+                            }}
+                        />
+                    }
+                    title={title}
+                    subheader={`${numberOfChecked(items)}/${items.length} selected`}
+                />
+                <Divider />
+                <List
+                    sx={{
+                        width: 200,
+                        height: 230,
+                        bgcolor: 'background.paper',
+                        overflow: 'auto'
+                    }}
+                    dense
+                    component='div'
+                    role='list'
+                >
+                    {
+                        items.map((value, index) => {
+                            const labelId = `transfer-list-all-item-${value}-label`;
+                            return (
+                                <ListItem
+                                key={index}
+                                role='listitem'
+                                button
+                                onClick={handleToggle(value)}
+                                >
+                                    <ListItemIcon>
+                                        <Checkbox 
+                                            checked={checked.indexOf(value) !== -1}
+                                            tabIndex={-1}
+                                            disableRipple
+                                            inputProps={{
+                                                'aria-labelledby': labelId
+                                            }}
+                                        />
+                                    </ListItemIcon>
+                                    <ListItemText id={labelId} primary={value.subjectName} />
+                                </ListItem>
+                            )
+                        })
+                    }
+                </List>
+            </Card>
+        )
+    }
+    function initializedSectionListFromSubjectAssignation(course_id: number){
+        apiSectionList.execute(course_id)
+            .then((res) => {
+                const result = res.data?.length > 0 && res.data.map((item: any) => {
+                    return {
+                        label: item.sectionName,
+                        value: item.id
+                    }
+                })
+                setAssignedSections(result)
+        })
+    }
+    const handleSelectedCourse = (e: string) => {
+        apiAccountsByCourse.execute({ courseId: parseInt(e) , section_id: 0})
+        .then(repository => {
+            setStudents(repository.data)
+            setSelectedCourse(e)
+            initializedSectionListFromSubjectAssignation(parseInt(e))
+        })
+    }
+    const handleSelectedSection = (e: string) => {
+        apiAccountsByCourse.execute({ courseId: parseInt(selectedCourse), section_id: parseInt(e)})
+        .then(repository => {
+            setStudents(repository.data)
+            setSelectedSection(e)
+        })
+    }
+    const filteredList = students.filter((row: any) => {
+        return row.firstname.toLowerCase().includes(search.toLowerCase())
+    })
+    const startIndex = (page - 1) * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    function handleChangePage(event: any, newPage: number){
+        setPage(newPage)
+    }
+    const memoizedSelectedStudentByCourse = useMemo(() => {
+        function handleSelectedStudent(id: any){
+            setAccounts([id])
+            setLoading(!loading)
+            const obj = {
+                courseId : parseInt(selectedCourse),
+                accountId: [id]
+            }
+            apiSelectedSubjectByCourse.execute(obj)
+            .then(repository => {
+                setLoading(false)
+                setLeft(repository.data)
+                apiAssignedSubjectsByCourse.execute(obj)
+                .then(assignedRepository => {
+                    setRight(assignedRepository.data)
+            })
+        })
+        }
+        const columns: any = [
+            {
+                field: 'imgurl',
+                headerName: '',
+                sortable: false,
+                width: 120,
+                renderCell: (params: any) => {
+                    if(params.row.imgurl == 'no-image'){
+                        return (
+                            <>
+                                <Avatar {...stringAvatarColumns(params.row.firstname + " " + params.row.lastname)} />
+                            </>
+                        )
+                    } else {
+                        return (
+                            <>
+                                <Avatar sx={{
+                                        width: 50, height: 50
+                                    }} src={params.row.imgurl} />
+                            </>
+                        )
+                    }
+                }
+            },
+            {
+                field: 'fullName',
+                headerName: 'Name',
+                sortable: false,
+                width: 200,
+                valueGetter: (params: any) => `${params.row.firstname} ${params.row.lastname}`
+            },
+            {
+                headerName: 'Actions',
+                width: 200,
+                sortable: false,
+                renderCell: (params: any) => (
+                    <Button
+                    onClick={() => handleSelectedStudent(params.row.id)}
+                    size='small'
+                    variant='contained'
+                    color='primary'
+                    >SELECT</Button>
+                )
+            }
+        ]
+        return (
+            <ProjectTable 
+                sx={{ mt: 2 }}
+                data={filteredList ?? students}
+                columns={columns}
+                pageSize={10}
+            />
+        )
+    }, [students, filteredList, search])
+    function initializedSectionsByCourse() {
+        const values = getValues()
+        if(values.course_id === undefined) {
+            return;
+        } else {
+            apiSectionList.execute(parseInt(values.course_id))
+            .then((res) => {
+                const result = res.data?.length > 0 && res.data.map((item: any) => {
+                    return {
+                        label: item.sectionName,
+                        value: item.id
+                    }
+                })
+                setSections(result)
+            })
+        }
+    }
+    useEffect(() => {
+        initializedSectionsByCourse()
+    }, [guardCourseId])
     return (
         <>
             {
@@ -571,6 +999,9 @@ const AddNewStudent = () => {
                                         },
                                         {
                                             label: 'Student List'
+                                        },
+                                        {
+                                            label: 'Subject Assignation'
                                         }
                                     ]
                                 }
@@ -613,7 +1044,7 @@ const AddNewStudent = () => {
                                                         <h3 className="font-medium text-black dark:text-white">
                                                             Section Assignation
                                                         </h3>
-                                                        <ControlledSelectField 
+                                                        <ControlledMultipleSelectField 
                                                             control={control}
                                                             name='section'
                                                             options={sections}
@@ -626,6 +1057,7 @@ const AddNewStudent = () => {
                                                 </div>
                                             </div>
                                         </div>
+                                        
                                         <NormalButton 
                                             sx={{
                                                 float: 'right',
@@ -640,12 +1072,84 @@ const AddNewStudent = () => {
                                         />
                                         </BaseCard>
                                         </FormProvider>
-                                        : tabsValue == 1 &&
+                                        : tabsValue == 1 ?
                                         <>
                                             <BaseCard>
                                                 <Typography variant='body1'>Student List</Typography>
                                                 {memoizedDataGrid}
                                             </BaseCard>
+                                        </>
+                                        : tabsValue == 2 &&
+                                        <>
+                                        <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+                                            <Grid item xs={6}>
+                                                <BaseCard style={{ marginTop: '20px', marginBottom: '20px'}}>
+                                                    <Typography variant='button'>
+                                                        Student Selection
+                                                    </Typography>
+                                                    <hr />
+                                                    <BasicSelectField 
+                                                            options={studentCourses}
+                                                            label='Select course'
+                                                            onChange={handleSelectedCourse}
+                                                            value={selectedCourse}
+                                                    />
+                                                     <BasicSelectField 
+                                                            options={assignedSections}
+                                                            label='Select sections'
+                                                            onChange={handleSelectedSection}
+                                                            value={selectedSection}
+                                                    />
+                                                    <TextField 
+                                                        sx={{ width: '100%' }}
+                                                        variant='standard'
+                                                        placeholder='Search'
+                                                        onChange={handleChangeSearch}
+                                                    />
+                                                    {memoizedSelectedStudentByCourse}
+                                                </BaseCard>
+                                            </Grid>
+                                            <Grid item xs={6}>
+                                            <BaseCard style={{ marginTop: '20px', marginBottom: '20px'}}>
+                                                <Typography variant='button'>
+                                                    Subject Assignation
+                                                </Typography>
+                                                <hr />
+                                                <Grid container spacing={2} justifyContent='center' alignItems='center'>
+                                                
+                                                <Grid item sx={{ mt: 2 }}>
+                                                {customList('Subjects', left)}
+                                                </Grid>
+                                                        <Grid item>
+                                                            <Grid container direction='column' alignItems='center'>
+                                                                <Button
+                                                                    sx={{
+                                                                        my: 0.5
+                                                                    }}
+                                                                    variant='outlined'
+                                                                    size='small'
+                                                                    onClick={handleCheckedRight}
+                                                                    disabled={leftChecked.length === 0}
+                                                                    aria-label='move selected right'
+                                                                >&gt;</Button>
+                                                                <Button
+                                                                    sx={{ my: 0.5 }}
+                                                                    variant='outlined'
+                                                                    size='small'
+                                                                    onClick={handleCheckedLeft}
+                                                                    disabled={rightChecked.length === 0}
+                                                                    aria-label='move selected left'
+                                                                >&lt;</Button>
+                                                            </Grid>
+                                                        </Grid>
+                                                        <Grid item sx={{ mt: 2 }}>
+                                                            {customList('Assigned', right)}
+                                                        </Grid>
+                                                    </Grid>
+                                            </BaseCard>
+                                            </Grid>
+                                        </Grid>
+                                            
                                         </>
                                 }
                             </ControlledTabs>
