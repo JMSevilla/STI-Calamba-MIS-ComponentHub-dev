@@ -7,6 +7,7 @@ import { Avatar, Chip, Grid, List, ListItem, ListItemAvatar, ListItemText, Typog
 import BaseCard from '../components/Card/Card'
 import DescriptionIcon from '@mui/icons-material/Description';
 import moment from 'moment'
+import { BasicStyledBadge } from '../components/Badge/StyledBadge'
 
 const ProfileDetails: React.FC = () => {
     const location = useLocation()
@@ -64,13 +65,25 @@ const ProfileDetails: React.FC = () => {
                             <div className="relative drop-shadow-2">
                                     {
                                         item.imgurl == 'no-image' ?
-                                        <Avatar {...stringAvatar(item.firstname + " " + item.lastname)} />
+                                        <>
+                                            <BasicStyledBadge
+                                                accountId={accountId}
+                                                node={
+                                                    <Avatar {...stringAvatar(item.firstname + " " + item.lastname)} />
+                                                }
+                                            />
+                                        </>
                                         :
                                         <>
-                                         <Avatar
-                                        src={item.imgurl}
-                                        sx={{ width: 150, height: 150 }}
-                                        />
+                                         <BasicStyledBadge 
+                                            accountId={accountId}
+                                            node={
+                                                <Avatar
+                                                src={item.imgurl}
+                                                sx={{ width: 150, height: 150 }}
+                                                />
+                                            }
+                                         />
                                         </>
                                     }
                             </div>
@@ -153,7 +166,7 @@ const ProfileDetails: React.FC = () => {
                                                                 <hr />
                                                             </List>
                                                             ))}
-                                                            <Pagination
+        <Pagination
             count={Math.ceil(logger.length / itemsPerPage)}
             page={page}
             onChange={handleChangePage}

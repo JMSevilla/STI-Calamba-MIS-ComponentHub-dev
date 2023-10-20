@@ -3,7 +3,8 @@ import { ProjectTableProps } from '../../core/types'
 import './ProjectTable.css'
 export const ProjectTable: React.FC<ProjectTableProps> = ({
     columns, data, sx, loading, pageSize,
-    selectedRows
+    checkboxSelection = false, disableRowSelectionOnClick = false,
+    onRowSelectionModelChange, rowSelectionModel
 }) => {
     return (
         <>
@@ -14,12 +15,17 @@ export const ProjectTable: React.FC<ProjectTableProps> = ({
                 columns={columns}
                 autoHeight
                 disableColumnMenu
+                checkboxSelection={checkboxSelection}
+                disableRowSelectionOnClick={disableRowSelectionOnClick}
                 pagination
                 initialState={{
                     pagination: { paginationModel: {pageSize: pageSize}}
                 }}
                 pageSizeOptions={[10, 20, 35]}
                 rowHeight={100}
+                onRowSelectionModelChange={onRowSelectionModelChange}
+                rowSelection
+                rowSelectionModel={rowSelectionModel}
             />
         </>
     )

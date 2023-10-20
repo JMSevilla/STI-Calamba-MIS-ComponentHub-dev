@@ -26,6 +26,7 @@ export type AccountSetupProps = {
     access_level: number
     section: number
     course_id?: number
+    multipleSections: string
 }
 
 export type AccountModeratorProps = {
@@ -36,7 +37,8 @@ export type AccountModeratorProps = {
     middlename?: string | undefined
     lastname: string | undefined
     mobileNumber: string | undefined
-    section: string
+    section: any
+    multipleSections: string
     course_id: string
     type?: number
 }
@@ -49,7 +51,7 @@ export type AccountStudentProps = {
     middlename?: string | undefined
     lastname: string | undefined
     mobileNumber: string | undefined
-    section: string
+    section: number | undefined | string
     course_id: string
 }
 
@@ -94,6 +96,8 @@ export type ResponseReferencesTypes = {
     imgurl: string
     email: string
     verified: number
+    course: number
+    multipleSections: string
 }
 
 export type SectionProps = {
@@ -116,6 +120,12 @@ export type ProjectTableProps = {
     page?: number
     handlePageChange?: (params: any) => void
     selectedRows?: any
+    checkboxSelection?: boolean
+    disableRowSelectionOnClick?: boolean
+    onRowSelectionModelChange?: (newSelection: any) => void
+    rowSelectionModel?: any
+    selectionModel?: any
+    setSelectionModel?: any
 };
 
 export type CreateTicket = {
@@ -174,4 +184,36 @@ export type SecurityAndPasswordProps = {
     currentPassword: string
     newPassword: string
     email: string | undefined
+}
+
+export type GlobalCategories = {
+    categoryName : string
+    categoryDescription : any
+    categoryPath: string | undefined
+}
+
+export type CourseManagementProps = {
+    courseId: number
+    courseName: string
+    categoryId: string
+    courseAcronym: string
+    courseDescription: string | undefined
+    imgurl: string
+    numbersOfStudent: number
+    maximumStudents: number
+}
+
+export type SubjectManagementProps = {
+    courseId: string
+    categoryId: string
+    subjectName: string
+    subjectArea: string
+    description: string
+    units: number
+}
+
+export type SubjectStartAssignation = {
+    subjectId: string
+    accountId : number
+    courseId: number
 }

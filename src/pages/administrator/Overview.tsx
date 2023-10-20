@@ -15,14 +15,14 @@ const DashboardOverview = () => { //might be dynamic based on DB
         setTimeout(() => setPreLoad(false), 2000)
     }, [])
     const apiCountTotalOpenTickets = useApiCallback(
-      async (api, args: { type: string, section?: number | undefined}) => await api.internal.totalReport(args)
+      async (api, args: { type: string, section?: number[]}) => await api.internal.totalReport(args)
     )
     function initializedCountReports() {
       Promise.all([
-        apiCountTotalOpenTickets.execute({ type: "total-open-tickets", section: 0 }).then(res => res.data),
-        apiCountTotalOpenTickets.execute({ type: "total-inprogress-tickets", section: 0 }).then(res => res.data),
-        apiCountTotalOpenTickets.execute({ type: "total-completed-tickets", section: 0 }).then(res => res.data),
-        apiCountTotalOpenTickets.execute({ type: "total-users", section: 0 }).then(res => res.data)
+        apiCountTotalOpenTickets.execute({ type: "total-open-tickets", section: [0] }).then(res => res.data),
+        apiCountTotalOpenTickets.execute({ type: "total-inprogress-tickets", section: [0] }).then(res => res.data),
+        apiCountTotalOpenTickets.execute({ type: "total-completed-tickets", section: [0] }).then(res => res.data),
+        apiCountTotalOpenTickets.execute({ type: "total-users", section: [0] }).then(res => res.data)
       ]).then((res) => {
         setTotalOpenTickets(res[0])
         setTotalInprogressTickets(res[1])

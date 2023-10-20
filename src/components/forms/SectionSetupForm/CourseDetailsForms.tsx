@@ -41,10 +41,15 @@ const CourseDetailsForm = () => {
             await apiCourseListByAcronyms
             .execute(extractCourseCode(section_name?.sectionName))
             .then(res => {
-                setCourses(res.data)
+                const result = res.data?.length > 0 && res.data.map((rep: any) => {
+                    return {
+                        label: rep.courseAcronym,
+                        value: rep.id
+                    }
+                })
+                setCourses(result)
             })
         }
-        console.log(extractCourseCode(section_name?.sectionName))
         findCoursesInAcronyms()
     }, [])
     return (

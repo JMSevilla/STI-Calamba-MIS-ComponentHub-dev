@@ -8,7 +8,10 @@ const moderatorBaseSchema = z.object({
     username: requiredString('Your username is required.'),
     password: requiredString('Your password is required.'),
     mobileNumber: requiredString('Kindly provide your mobile number'),
-    section: requiredString('Kindly select section'),
+    section: z.object({
+        label : z.string(),
+        value: z.any()
+    }).array(),
     course_id: requiredString('Kindly select course')
 })
 

@@ -120,7 +120,8 @@ export const OtpEntryPage: React.FC = () => {
                                 status: 1,
                                 verified: 0,
                                 access_level: 1,
-                                section: 0
+                                section: 0,
+                                multipleSections: ""
                             }
                             mutate(obj, {
                                 onSuccess: (res: any) => {

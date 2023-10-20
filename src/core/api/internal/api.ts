@@ -1,5 +1,5 @@
 import { AxiosInstance } from 'axios'
-import { AccountSetupProps, ConferenceAuthProps, CreateTicket, MeetRoomJoinedProps, MeetingActionsLogger, SectionProps } from '../../types'
+import { AccountSetupProps, ConferenceAuthProps, CourseManagementProps, CreateTicket, GlobalCategories, MeetRoomJoinedProps, MeetingActionsLogger, SectionProps, SubjectManagementProps, SubjectStartAssignation } from '../../types'
 import { CourseInfer } from '../../schema/section'
 import { CreateRoomInfer } from '../../schema/room'
 
@@ -158,8 +158,8 @@ export class InternalRequestAPI {
     public findProductivity(id: number){
         return this.axios.get(`/v1/accountsservice/find-productivity-student/${id}`)
     }
-    public getAllRooms(sectionId: number){
-        return this.axios.get(`/v1/meetingroomservice/get-all-rooms/${sectionId}`)
+    public getAllRooms(props: { section: number[] }){
+        return this.axios.post(`/v1/meetingroomservice/get-all-rooms`, props)
     }
     public leaveMeeting(props: {
         roomId: string | undefined,
@@ -229,9 +229,9 @@ export class InternalRequestAPI {
     }
     public totalReport(props: {
         type: string,
-        section?: number | undefined
+        section?: number[]
     }){
-        return this.axios.get(`/v1/ticketingservice/total-open-tickets-report/${props.type}/${props.section}`)
+        return this.axios.post(`/v1/ticketingservice/total-open-tickets-report`, props)
     }
     public ticketChartReport(){
         return this.axios.get('/v1/ticketingservice/ticket-report-chart')
@@ -245,11 +245,11 @@ export class InternalRequestAPI {
     public getAllCoursesNonJoined(){
         return this.axios.get('/v1/sectionservice/get-all-courses')
     }
-    public getAllSectionsNonJoined(){
-        return this.axios.get('/v1/sectionservice/get-all-sections-non-joined')
+    public getAllSectionsNonJoined(course_id: number){
+        return this.axios.get(`/v1/sectionservice/get-all-sections-non-joined/${course_id}`)
     }
-    public studentAttendanceInitialized(section: number | undefined){
-        return this.axios.get(`/v1/accountsservice/student-attendance-initialized/${section}`)
+    public studentAttendanceInitialized(props: { section: number[] }){
+        return this.axios.post(`/v1/accountsservice/student-attendance-initialized`, props)
     }
     public currentstudentAttendanceInitialized(accountId: number | undefined){
         return this.axios.get(`/v1/accountsservice/current-student-attendance-initialized/${accountId}`)
@@ -259,7 +259,7 @@ export class InternalRequestAPI {
         to: string | undefined,
         section: number | undefined
     }){
-        return this.axios.get(`/v1/accountsservice/student-attendance-filtering/from/${props.from}/to/${props.to}/${props.section}`)
+        return this.axios.post(`/v1/accountsservice/student-attendance-filtering/from/to`, props)
     }
     public studentMarkStatus(props: {
         id: string,
@@ -303,5 +303,74 @@ export class InternalRequestAPI {
     }
     public detectNewAccount(id: number) {
         return this.axios.get(`/v1/accountsservice/detect-new-account/${id}`)
+    }
+    public accountArchive(id: number) {
+        return this.axios.put(`/v1/accountsservice/archive-account/${id}`)
+    }
+    public listOfArchives(access_level: number){
+        return this.axios.get(`/v1/accountsservice/list-of-archives/${access_level}`)
+    }
+    public recoverFromArchives(accountId: number){
+        return this.axios.put(`/v1/accountsservice/recover-from-archives/${accountId}`)
+    }
+    public deleteAccountPermanentlyLogs(accountId: number){
+        return this.axios.get(`/v1/accountsservice/delete-account-permanently-check-history/${accountId}`)
+    }
+    public deleteShouldBeInProgress(accountId: number){
+        return this.axios.delete(`/v1/accountsservice/delete-should-push/${accountId}`)
+    }
+    public categoryCreation(props: GlobalCategories){
+        return this.axios.post('/v1/coursemanagementservice/create-category', props)
+    }
+    public categoryList(){
+        return this.axios.get('/v1/coursemanagementservice/category-list')
+    }
+    public createCourseManagement(props: CourseManagementProps){
+        return this.axios.post('/v1/coursemanagementservice/create-course', props)
+    }
+    public courseListByCategory(id: string){
+        return this.axios.get(`/v1/coursemanagementservice/course-by-category/${id}`)
+    }
+    public subjectList(){
+        return this.axios.get('/v1/coursemanagementservice/subject-list')
+    }
+    public createSubject(props: SubjectManagementProps){
+        return this.axios.post('/v1/coursemanagementservice/create-subject', props)
+    }
+    public coursemanagementList(){
+        return this.axios.get('/v1/coursemanagementservice/course-list')
+    }
+    public selectedSubjectByCourse(props : {
+        courseId: number,
+        accountId: number[]
+    }){
+        return this.axios.post(`/v1/coursemanagementservice/selected-subject-on-course`, props)
+    }
+    public assignedSubjectByCourse(props:{
+        courseId: number,
+        accountId: number[]
+    }){
+        return this.axios.post(`/v1/coursemanagementservice/assigned-subject-on-course`, props)
+    }
+    public accountsByCourse(props: {
+        courseId: number,
+        section_id: number
+    }){
+        return this.axios.get(`/v1/accountsservice/accounts-by-course/${props.courseId}/${props.section_id}`)
+    }
+    public startSubjectAssignation(props: SubjectStartAssignation){
+        return this.axios.post('/v1/coursemanagementservice/subject-start-assignation', props)
+    }
+    public dismantleSubjectsToStudents(subjectId: string) {
+        return this.axios.delete(`/v1/coursemanagementservice/dismantle-subjects-to-students/${subjectId}`)
+    }
+    public courseListViewing(course_id: number){
+        return this.axios.get(`/v1/coursemanagementservice/course-list-viewing/${course_id}`)
+    }
+    public subjectsListByCourse(course_id : number){
+        return this.axios.get(`/v1/coursemanagementservice/subjects-list-by-course/${course_id}`)
+    }
+    public activeStatusIdentifier(accountId: number) {
+        return this.axios.get(`/v1/accountsservice/account-active-status/${accountId}`)
     }
 }

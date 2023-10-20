@@ -63,11 +63,11 @@ const ControlledModal: React.FC<ModalProps> = ({
                         {
                                 enableDecline && <Button sx={{
                                     display: buttonTextAccept == 'NO-BTN' ? 'none' : ''
-                                }} variant='outlined' color='error' onClick={handleDecline}>{buttonTextDecline}</Button>
+                                }} variant='contained' size='small' color='error' onClick={handleDecline}>{buttonTextDecline}</Button>
                             }
                             <Button sx={{
                             display: buttonTextAccept == 'NO-BTN' ? 'none' : ''
-                            }} disabled={isValid} variant='outlined' color={color} onClick={handleSubmit} autoFocus>
+                            }} disabled={isValid} size='small' variant='contained' color={color} onClick={handleSubmit} autoFocus>
                                 {buttonTextAccept}
                             </Button>
                             

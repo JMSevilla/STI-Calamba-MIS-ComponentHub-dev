@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useState } from 'react'
 import {
     Navigate,
     Route, Routes, useLocation, useNavigate
@@ -16,21 +16,47 @@ import { useRefreshTokenHandler } from '../core/hooks/useRefreshTokenHandler'
 import { ApplicationSettings } from '../core/utils/settings-migration'
 import UnauthorizedPage from '../pages/unauthorized-page'
 import ForgotPassword from '../pages/forgot-password'
+import MobilePrevention from '../pages/mobile-prevention'
+import ApprovalWaiting from '../pages/approval-waiting'
 
+function isMobileAgent(){
+    const mobileUserAgents = [
+        /Android/i,
+        /webOS/i,
+        /iPhone/i,
+        /iPad/i,
+        /iPod/i,
+        /BlackBerry/i,
+        /Windows Phone/i,
+    ];
+    return mobileUserAgents.some((mobileUserAgents) => 
+        navigator.userAgent.match(mobileUserAgents)
+    );
+}
 
 function App() {
     const [accessToken, setAccessToken] = useAccessToken()
     const [refreshToken, setRefreshToken] = useRefreshToken()
     const [references, setReferences] = useReferences()
+    const [isMobile, setIsMobile] = useState(false)
     const loadAccountSetup = useApiCallback(api => api.internal.AccountSetupFindAnyUsers())
     const apiMigrateAppSettings = useApiCallback(
         async (api, args: { roomSettings: string }) =>
         await api.internal.initializedSettings(args)
     )
+    
+    
     const { logout } = useAuthContext()
-    
-    
     const navigate = useNavigate()
+    useEffect(() => {
+        setIsMobile(isMobileAgent())
+        if(isMobile) {
+            console.log(isMobile)
+            return navigate(Path.mobile_prevention.path)
+        }
+    }, [isMobile])
+    
+    
     useEffect(() => {
         apiMigrateAppSettings.execute({ roomSettings: JSON.stringify(ApplicationSettings)})
         loadAccountSetup.execute().then(res => {
@@ -68,6 +94,17 @@ function App() {
                     <Route 
                         path={Path.forgot_password.path}
                         element={<ForgotPassword />}
+                    />
+                    {
+                        isMobile &&
+                        <Route 
+                        path={Path.mobile_prevention.path}
+                        element={<MobilePrevention />}
+                    />
+                    }
+                    <Route 
+                        path={Path.approval_waiting.path}
+                        element={<ApprovalWaiting />}
                     />
                    {
                     accessToken && 

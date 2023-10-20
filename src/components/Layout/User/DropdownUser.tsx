@@ -6,6 +6,7 @@ import { useApiCallback } from '../../../core/hooks/useApi';
 import routes from '../../../router/path';
 import { Avatar } from '@mui/material';
 import { useAvatarConfiguration } from '../../../core/hooks/useAvatarConfiguration';
+import { BasicStyledBadge } from '../../Badge/StyledBadge';
 
 export const DropdownUser = () => {
     const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -13,9 +14,10 @@ export const DropdownUser = () => {
     const trigger = useRef<any>(null);
     const dropdown = useRef<any>(null);
     const [references, setReferences] = useReferences()
-    const { stringToColor,
-      stringAvatarColumns } = useAvatarConfiguration()
+    const { stringAvatarColumns } = useAvatarConfiguration()
     const { logout } = useAuthContext()
+    
+    
     useEffect(() => {
         const clickHandler = ({ target }: MouseEvent) => {
         if (!dropdown.current) return;
@@ -79,7 +81,22 @@ export const DropdownUser = () => {
                 <span className="h-12 w-12 rounded-full">
                   {
                     references?.imgurl == 'no-image' || references?.imgurl == 'no-image-attached' ? 
-                    <Avatar {...stringAvatarColumns(references.firstname + " " + references.lastname)} /> : <Avatar sx={{ mt: 1 }} src={references?.imgurl} />
+                    <>
+                      <BasicStyledBadge
+                        accountId={references?.id}
+                        node={
+                          <Avatar {...stringAvatarColumns(references.firstname + " " + references.lastname)} />
+                        }
+                      />
+                    </> : 
+                    <>
+                      <BasicStyledBadge 
+                        accountId={references?.id}
+                        node={
+                          <Avatar sx={{ mt: 1 }} src={references?.imgurl} />
+                        }
+                      />
+                    </>
                   }
                 </span>
 

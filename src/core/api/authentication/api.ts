@@ -60,4 +60,29 @@ export class AuthenticationRequestAPI {
     public detectAccountIsNotVerified(accountId: number | undefined) {
         return this.axios.get(`/v1/accountsservice/detect-account-unverified/${accountId}`)
     }
+    public deviceKeyIdentifier(props: {
+        deviceKey: string | undefined,
+        username: string | undefined
+    }) {
+        return this.axios.post(`/v1/accountsservice/device-key-identifier/${props.deviceKey}/${props.username}`)
+    }
+    public _checkSigninRequest(accountId: number){
+        return this.axios.get(`/v1/accountsservice/check-signin-request/${accountId}`)
+    }
+    public _approveSigninRequest(props: {
+        accountId: number
+    }){
+        return this.axios.post(`/v1/accountsservice/approve-signin-request`, props)
+    }
+    public _getApprovedSigninRequest(username: string | undefined){
+        return this.axios.get(`/v1/accountsservice/get-approved-request/${username}`)
+    }
+    public _rejectSigninRequest(props: {
+        accountId: number
+    }) {
+        return this.axios.put('/v1/accountsservice/reject-signin-request', props)
+    }
+    public _getRejectedSigninRequest(username: string | undefined) {
+        return this.axios.get(`/v1/accountsservice/get-rejected-request/${username}`)
+    }
 }
