@@ -22,11 +22,10 @@ const MobilePrevention : React.FC = () => {
     const [isMobile, setIsMobile] = useState(false)
     const navigate = useNavigate()
     useEffect(() => {
-        setIsMobile(isMobileAgent())
-        if(isMobile) {
+        if(isMobileAgent()) {
             return 
         } else {
-            navigate(Path.login.path)
+            return navigate(Path.login.path)
         }
     }, [isMobile])
     return (
