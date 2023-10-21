@@ -102,10 +102,6 @@ function App() {
                         element={<MobilePrevention />}
                     />
                     }
-                    <Route 
-                        path={Path.approval_waiting.path}
-                        element={<ApprovalWaiting />}
-                    />
                    {
                     accessToken && 
                     <Route element={<DashboardLayout />}>

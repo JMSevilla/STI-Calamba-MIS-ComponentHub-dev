@@ -77,7 +77,10 @@ type RouteProps = {
     unauthorized: PathProps
     forgot_password: PathProps
     mobile_prevention: PathProps
-    approval_waiting: PathProps
+    /**
+     * @deprecated this path is deprecated for some deep investigation
+     */
+    // approval_waiting: PathProps
 }
 
 export const Path: RouteProps = {
@@ -91,7 +94,7 @@ export const Path: RouteProps = {
     unauthorized: { path : '/unauthorized' },
     forgot_password: { path: '/forgot-password' },
     mobile_prevention: { path: '/mobile-prevention' },
-    approval_waiting: { path: '/approval-waiting' }
+    // approval_waiting: { path: '/approval-waiting' }
 }
 
 const coreRoutes: CoreRoutesProps[] = [
