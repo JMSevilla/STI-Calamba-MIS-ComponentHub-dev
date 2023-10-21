@@ -137,101 +137,103 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<{}>> = ({
                 "error"
                 );
             } else {
-                deviceKeyIdentifier.execute({
-                  username: loginArgs.username,
-                  deviceKey: !deviceKey ? 'no-device-key-found'
-                  : deviceKey
-                }).then((deviceResult) => {
-                  if(deviceResult.data === 201) {
-                    // navigate to approval waiting 
-                    navigate(`${Path.approval_waiting.path}?result=${deviceResult.data}&username=${loginArgs.username}&key=${loginArgs.password}`)
-                    setAccess(true)
-                  } else if(deviceResult.data?.status === 200) {
-                    // new device key issued
-                    setAccess(false)
-                    setStoreDeviceKey(deviceResult.data?.key)
-                    setAccessToken(response?.data?.TokenInfo?.token)
-                    setRefreshToken(response?.data?.TokenInfo?.refreshToken)
-                    response?.data?.references?.length > 0 && response?.data?.references?.map((data: ResponseReferencesTypes) => {
-                    const compressed: ResponseReferencesTypes = {
-                        id: data.id,
-                        access_level: data.access_level,
-                        firstname: data.firstname,
-                        middlename: data.middlename,
-                        lastname: data.lastname,
-                        imgurl: data.imgurl,
-                        mobile_number: data.mobile_number,
-                        section: data.section,
-                        username: data.username,
-                        email: data.email,
-                        verified: data.verified,
-                        course: data.course,
-                        multipleSections: data.multipleSections
-                    }
-                    
-                    const findRoute: any = routes.find((route) => route.access === compressed.access_level)?.path
-                    setReferences(compressed)
-                    if(compressed.access_level === 1 && compressed.verified === 1){
-                        navigate(findRoute)
-                    } else {
-                        if(compressed.access_level === 2 && compressed.verified === 0) {
-                            setReuseOtp({ currentScreen : 'none' })
-                            setSavedPassword(loginArgs.password)
-                            navigate(Path.otp_entry_page.path)
-                        } else if(compressed.access_level === 2 
-                            && compressed.verified === 1){
-                                navigate(findRoute)
-                        } else if(compressed.access_level === 3 && compressed.verified === 0) {
-                            setReuseOtp({ currentScreen : 'none' })
-                            setSavedPassword(loginArgs.password)
-                            navigate(Path.otp_entry_page.path)
-                        } else if(compressed.access_level === 3
-                          && compressed.verified === 1) {
-                            navigate(findRoute)
-                          }else if(compressed.access_level === 1 && compressed.verified === 0) {
-                            setReuseOtp({ currentScreen : 'none' })
-                            setSavedPassword(loginArgs.password)
-                            navigate(Path.otp_entry_page.path)
-                        }else if(compressed.access_level === 1
-                          && compressed.verified === 1) {
-                            navigate(findRoute)
-                          }
-                    }
-                })
-                  } else if(deviceResult.data === 500) {
-                    // something went wrong..
-                    setAccess(false)
-                    setLoading(false)
-                    ToastMessage(
-                    "Something went wrong.",
-                    "top-right",
-                    false,
-                    true,
-                    true,
-                    true,
-                    undefined,
-                    "dark",
-                    "error"
-                    );
-                  } else if(deviceResult.data === 400) {
-                    //device key unauthorized
-                    setAccess(false)
-                    setLoading(false)
-                    ToastMessage(
-                    "You are unauthorized to access the system.",
-                    "top-right",
-                    false,
-                    true,
-                    true,
-                    true,
-                    undefined,
-                    "dark",
-                    "error"
-                    );
-                  }
-                })
+                /**
+                 * @deprecated this function is deprecated for some deep investigation
+                 */
+                // deviceKeyIdentifier.execute({
+                //   username: loginArgs.username,
+                //   deviceKey: !deviceKey ? 'no-device-key-found'
+                //   : deviceKey
+                // }).then((deviceResult) => {
+                //   if(deviceResult.data === 201) {
+                //     // navigate to approval waiting 
+                //     navigate(`${Path.approval_waiting.path}?result=${deviceResult.data}&username=${loginArgs.username}&key=${loginArgs.password}`)
+                //     setAccess(true)
+                //   } else if(deviceResult.data?.status === 200) {
+                //     // new device key issued
+                   
+                //   } else if(deviceResult.data === 500) {
+                //     // something went wrong..
+                //     setAccess(false)
+                //     setLoading(false)
+                //     ToastMessage(
+                //     "Something went wrong.",
+                //     "top-right",
+                //     false,
+                //     true,
+                //     true,
+                //     true,
+                //     undefined,
+                //     "dark",
+                //     "error"
+                //     );
+                //   } else if(deviceResult.data === 400) {
+                //     //device key unauthorized
+                //     setAccess(false)
+                //     setLoading(false)
+                //     ToastMessage(
+                //     "You are unauthorized to access the system.",
+                //     "top-right",
+                //     false,
+                //     true,
+                //     true,
+                //     true,
+                //     undefined,
+                //     "dark",
+                //     "error"
+                //     );
+                //   }
+                // })
                 // navigate > assigned dashboard
+                setAccess(false)
+                setAccessToken(response?.data?.TokenInfo?.token)
+                setRefreshToken(response?.data?.TokenInfo?.refreshToken)
+                response?.data?.references?.length > 0 && response?.data?.references?.map((data: ResponseReferencesTypes) => {
+                const compressed: ResponseReferencesTypes = {
+                    id: data.id,
+                    access_level: data.access_level,
+                    firstname: data.firstname,
+                    middlename: data.middlename,
+                    lastname: data.lastname,
+                    imgurl: data.imgurl,
+                    mobile_number: data.mobile_number,
+                    section: data.section,
+                    username: data.username,
+                    email: data.email,
+                    verified: data.verified,
+                    course: data.course,
+                    multipleSections: data.multipleSections
+                }
                 
+                const findRoute: any = routes.find((route) => route.access === compressed.access_level)?.path
+                setReferences(compressed)
+                if(compressed.access_level === 1 && compressed.verified === 1){
+                    navigate(findRoute)
+                } else {
+                    if(compressed.access_level === 2 && compressed.verified === 0) {
+                        setReuseOtp({ currentScreen : 'none' })
+                        setSavedPassword(loginArgs.password)
+                        navigate(Path.otp_entry_page.path)
+                    } else if(compressed.access_level === 2 
+                        && compressed.verified === 1){
+                            navigate(findRoute)
+                    } else if(compressed.access_level === 3 && compressed.verified === 0) {
+                        setReuseOtp({ currentScreen : 'none' })
+                        setSavedPassword(loginArgs.password)
+                        navigate(Path.otp_entry_page.path)
+                    } else if(compressed.access_level === 3
+                      && compressed.verified === 1) {
+                        navigate(findRoute)
+                      }else if(compressed.access_level === 1 && compressed.verified === 0) {
+                        setReuseOtp({ currentScreen : 'none' })
+                        setSavedPassword(loginArgs.password)
+                        navigate(Path.otp_entry_page.path)
+                    }else if(compressed.access_level === 1
+                      && compressed.verified === 1) {
+                        navigate(findRoute)
+                      }
+                }
+            })
             }
         })
     }

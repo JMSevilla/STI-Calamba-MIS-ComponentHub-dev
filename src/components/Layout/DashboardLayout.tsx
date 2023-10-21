@@ -50,13 +50,16 @@ const DashboardLayout: React.FC = () => {
             setSignInReq(res.data)
         })
     }
-    useEffect(() => {
-        trackSigninRequest()
-        const intervalId = setInterval(trackSigninRequest, 5000)
-        return () => {
-            clearInterval(intervalId)
-        }
-    }, [signinReq])
+    /**
+     * @deprecated this function is deprecated for some deep investigation
+     */
+    // useEffect(() => {
+    //     trackSigninRequest()
+    //     const intervalId = setInterval(trackSigninRequest, 5000)
+    //     return () => {
+    //         clearInterval(intervalId)
+    //     }
+    // }, [signinReq])
     function watchDisabledAccount(){
         apiWatchDisabledAccount.execute(references?.id)
         .then(res => {
