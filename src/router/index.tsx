@@ -51,7 +51,8 @@ function App() {
     useEffect(() => {
         setIsMobile(isMobileAgent())
         if(isMobile) {
-            console.log(isMobile)
+            setIsMobile(isMobile)
+            localStorage.clear()
             return navigate(Path.mobile_prevention.path)
         }
     }, [isMobile])
