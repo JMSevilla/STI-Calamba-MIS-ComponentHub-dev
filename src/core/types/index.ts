@@ -39,7 +39,7 @@ export type AccountModeratorProps = {
     mobileNumber: string | undefined
     section: any
     multipleSections: string
-    course_id: string
+    course_id: string | undefined
     type?: number
 }
 
@@ -52,7 +52,7 @@ export type AccountStudentProps = {
     lastname: string | undefined
     mobileNumber: string | undefined
     section: number | undefined | string
-    course_id: string
+    course_id: string | undefined
 }
 
 export type ToastProps = {
