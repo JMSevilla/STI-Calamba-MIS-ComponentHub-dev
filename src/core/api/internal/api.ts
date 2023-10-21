@@ -307,8 +307,11 @@ export class InternalRequestAPI {
     public accountArchive(id: number) {
         return this.axios.put(`/v1/accountsservice/archive-account/${id}`)
     }
-    public listOfArchives(access_level: number){
-        return this.axios.get(`/v1/accountsservice/list-of-archives/${access_level}`)
+    public listOfArchives(props: {
+        access_level: number | undefined,
+        section?: number[]
+    }){
+        return this.axios.post(`/v1/accountsservice/list-of-archives`, props)
     }
     public recoverFromArchives(accountId: number){
         return this.axios.put(`/v1/accountsservice/recover-from-archives/${accountId}`)

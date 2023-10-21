@@ -11,8 +11,8 @@ const moderatorBaseSchema = z.object({
     section: z.object({
         label : z.string(),
         value: z.any()
-    }).array(),
-    course_id: requiredString('Kindly select course')
+    }).array().optional(),
+    course_id: requiredString('Kindly select course').optional()
 })
 
 export const moderatorSubSchema = z.discriminatedUnion('hasNoMiddleName', [

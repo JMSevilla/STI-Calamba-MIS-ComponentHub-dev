@@ -28,7 +28,7 @@ const AccountArchived: React.FC = () => {
     const [logs, setLogs] = useState<any>({})
     const [search, setSearch] = useState('')
     const apiListOfArchives = useApiCallback(
-        async (api, access_level: number) => await api.internal.listOfArchives(access_level)
+        async (api, args: { access_level: number | undefined, section?: number[] }) => await api.internal.listOfArchives(args)
     )
     const apiRecoverAccount = useApiCallback(
         async (api, accountId: number) => await api.internal.recoverFromArchives(accountId)
@@ -39,11 +39,16 @@ const AccountArchived: React.FC = () => {
     const apiDeletePermanentlyShouldPush = useApiCallback(
         async (api, accountId: number) => await api.internal.deleteShouldBeInProgress(accountId)
     )
+    function mappedSections() {
+        const ms = JSON.parse(references?.multipleSections ?? "")
+        const mapValues = ms?.length > 0 && ms.map((item: any) => item.value)
+        return mapValues
+    }
+    
     const { data, refetch } = useQuery({
         queryKey: 'listOfArchives',
         queryFn: () => apiListOfArchives.execute(
-            references?.access_level == 1 ? 2 :
-            references?.access_level == 2 ? 3 : 0
+            {access_level: references?.access_level, section: references?.access_level == 1 ? [0] : mappedSections()}
         ).then(res => res.data)
     })
     function recoverAccount(accountId: number) {
