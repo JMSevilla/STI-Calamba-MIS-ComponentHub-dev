@@ -721,7 +721,7 @@ const AddNewStudent = () => {
                     email: values.email,
                     password: values.password,
                     mobileNumber: values.mobileNumber,
-                    course_id: values.course_id,
+                    course_id: values.course_id ?? "0",
                     section: references?.section,
                     multipleSections: JSON.stringify(values.section)
                 }

@@ -202,7 +202,7 @@ const AddNewModerator = () => {
     const {
         formState: { isValid },
         handleSubmit, control,
-        watch, getValues, reset, resetField
+        watch, getValues, reset, resetField, setValue
     } = form;
     const guardCourseId = watch('course_id')
     const [courses, setCourses] = useState([])
@@ -754,7 +754,7 @@ const AddNewModerator = () => {
                     course_id: creationType ? "0" : values.course_id,
                     section: creationType ? "0" : "0",
                     type: creationType ? 1 : 2,
-                    multipleSections: JSON.stringify(values.section)
+                    multipleSections: creationType ? "none" : JSON.stringify(values.section)
                 }
                 await mutateAsync(objModerator, {
                     onSuccess: (res: AxiosResponse | undefined) => {
