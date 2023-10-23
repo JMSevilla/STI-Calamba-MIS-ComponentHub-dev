@@ -551,7 +551,7 @@ const MonitoringManagement: React.FC = () => {
                 const result = res.data?.length > 0 && res.data.map((item: any) => {
                     return {
                         label: item.sectionName,
-                        value: item.course_id
+                        value: item.id
                     }
                 })
                 setSections(result)

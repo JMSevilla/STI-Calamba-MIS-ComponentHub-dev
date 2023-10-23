@@ -25,7 +25,7 @@ import { useMutation, useQuery } from 'react-query'
 import { AxiosError, AxiosResponse } from 'axios'
 import { useToastMessage } from '../../../core/context/ToastContext'
 import { ControlledTabs } from '../../../components/Tabs/Tabs'
-import { Typography, IconButton, Avatar, Button, Tooltip } from '@mui/material'
+import { Typography, IconButton, Avatar, Button, Tooltip, TextField } from '@mui/material'
 import { ProjectTable } from '../../../components/DataGrid/ProjectTable'
 
 // icons
@@ -176,6 +176,7 @@ const AddNewModerator = () => {
     const [open, setOpen] = useState<boolean>(false)
     const [accountDeletionId, setAccountDeletionId] = useState<number>(0)
     const [selectedSection, setSelectedSection] = useState(0)
+    const [selectedCourse, setSelectedCourse] = useState(0)
     const [creationType, setCreationType] = useState(false)
     const [studentList, setStudentList] = useState([])
     
@@ -207,6 +208,8 @@ const AddNewModerator = () => {
     const guardCourseId = watch('course_id')
     const [courses, setCourses] = useState([])
     const [sections, setSections] = useState([])
+    const [basicSection, setBasicSection] = useState([])
+    const [basicCourse, setBasicCourse] = useState([])
     const { preload, setPreLoad, loading, setLoading, gridLoad, setGridLoad } = useLoaders()
     const { ToastMessage } = useToastMessage()
     const apiCourseList = useApiCallback(api => api.internal.getAllCoursesNonJoined())
@@ -555,6 +558,15 @@ const AddNewModerator = () => {
             </>
         )
     }, [data, gridLoad])
+    const [studentSearch, setStudentSearch] = useState('')
+    const filteredList = 
+        studentList?.length > 0 && studentList.filter((row: any) => {
+            if(!studentSearch){
+                return row;
+            } else {
+                return row.firstname.toLowerCase().includes(studentSearch.toLowerCase())
+            }
+        })
     const memoizedStudentList = useMemo(() => {
         const columns = [
             {
@@ -718,13 +730,13 @@ const AddNewModerator = () => {
         ]
         return (
             <ProjectTable 
-                data={studentList ?? []}
+                data={filteredList ?? filteredList}
                 columns={columns}
                 pageSize={10}
                 loading={gridLoad}
             />
         )
-    }, [studentList, gridLoad])
+    }, [filteredList, gridLoad])
     const useCreateModerator = () => {
         return useMutation( async (data: AccountModeratorProps) => 
             await apiCreateModerator.execute(data)
@@ -828,6 +840,7 @@ const AddNewModerator = () => {
                     }
                 })
                 setCourses(result)
+                setBasicCourse(result)
             }
         })
     }
@@ -857,6 +870,13 @@ const AddNewModerator = () => {
                 setSections(result)
             })
         }
+    }
+    function initializedBasicSectionsByCourse(value: any){
+        setSelectedCourse(value)
+        apiSectionList.execute(value)
+            .then((res) => {
+            
+        })
     }
     useEffect(() => {
         initializedSectionsByCourse()
@@ -990,13 +1010,14 @@ const AddNewModerator = () => {
                                                     InitializedStudentList(0)
                                                 }}
                                                 sx={{ mr: 1, mb: 1  }}
-                                                >Fetch all</Button>
-                                                <BasicSelectField 
-                                                label="Sections"
-                                                options={sections}
-                                                value={selectedSection}
-                                                onChange={handleSelectedSection}
-                                            />
+                                                >Fetch all</Button> 
+                                                <TextField 
+                                                    placeholder='Search'
+                                                    variant='standard'
+                                                    sx={{ mb: 2 }}
+                                                    onChange={(e: any) => setStudentSearch(e.currentTarget.value)}
+                                                    size='small'
+                                                />
                                             </div>
                                                 {memoizedStudentList}
                                             </BaseCard>
