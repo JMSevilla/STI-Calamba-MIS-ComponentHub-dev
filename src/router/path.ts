@@ -135,7 +135,7 @@ const coreRoutes: CoreRoutesProps[] = [
                 component: AccountArchived,
                 access: 1,
                 subMenuTitle: 'Accounts Archived',
-                isNewFeature : true
+                
             }
         ],
         svg: UAMSvg()
@@ -185,7 +185,6 @@ const coreRoutes: CoreRoutesProps[] = [
         customSubs: [],
         subMenuTitle: 'Subject Management',
         svg: SubjectSvg(),
-        isNewFeature : true,
         component: SubjectManagement
     },
     {
@@ -292,7 +291,7 @@ const coreRoutes: CoreRoutesProps[] = [
                 component: AccountArchived,
                 access: 2,
                 subMenuTitle: 'Accounts Archived',
-                isNewFeature : true
+                
             }
         ],
         svg: AddStudentSvg()
@@ -305,8 +304,7 @@ const coreRoutes: CoreRoutesProps[] = [
         hasSubMenus: false,
         subMenuTitle: 'Section',
         customSubs: [],
-        svg: AcademicSvg(),
-        isBetaTest: true
+        svg: AcademicSvg()
     },
     {
         path: '/dashboard/moderator/ticketing',
