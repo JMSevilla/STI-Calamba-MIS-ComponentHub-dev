@@ -160,8 +160,7 @@ const coreRoutes: CoreRoutesProps[] = [
                 component: CourseManagement,
                 access: 1,
                 hasSubMenus: true,
-                subMenuTitle: 'Course Management',
-                isNewFeature: true
+                subMenuTitle: 'Course Management'
             }
         ],
         svg: AcademicSvg()
@@ -174,8 +173,7 @@ const coreRoutes: CoreRoutesProps[] = [
         customSubs: [],
         subMenuTitle: 'Categories',
         svg: CategoriesSvg(),
-        component: CategoriesManagement,
-        isNewFeature: true
+        component: CategoriesManagement
     },
     {
         path: '/dashboard/admin/subject-management',
@@ -283,8 +281,7 @@ const coreRoutes: CoreRoutesProps[] = [
                 component: AddStudent,
                 access: 2,
                 hasSubMenus: true,
-                subMenuTitle: 'Add Student',
-                isNewFeature: true
+                subMenuTitle: 'Add Student'
             },
             {
                 path: '/dashboard/moderator/archived',
