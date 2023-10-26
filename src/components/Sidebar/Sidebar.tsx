@@ -84,6 +84,7 @@ export const Sidebar = ({sidebarOpen, setSidebarOpen}: SidebarProps) => {
                 console.log(ti)
                 const parsedTime = moment(ti.timeIn, "HH:mm:ss.SSSSSSS")
                 const formattedTime = parsedTime.format('hh:mm A')
+                console.log(formattedTime)
                 setTime(formattedTime)
             })
         })

@@ -280,12 +280,14 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<{}>> = ({
                 clearRefreshToken()
                 clearReferences()
                 clearDK()
+                localStorage.clear()
                 navigate(Path.login.path)
             } else {
                 clearAccessToken()
                 clearRefreshToken()
                 clearReferences()
                 clearDK()
+                localStorage.clear()
                 navigate(Path.login.path)
             }
         }).catch((err : AxiosError) => {
@@ -293,6 +295,7 @@ export const AuthenticationProvider: React.FC<React.PropsWithChildren<{}>> = ({
                 clearAccessToken()
                 clearRefreshToken()
                 clearReferences()
+                localStorage.clear()
                 navigate(Path.login.path)
             }
         })
