@@ -91,7 +91,7 @@ const CourseManagement: React.FC = () => {
                 courseId: parseInt(values.courseCode),
                 courseName: values.courseName,
                 courseAcronym: values.courseAcronym,
-                courseDescription: values.courseDescription,
+                courseDescription: values.courseDescription ?? JSON.stringify("none"),
                 imgurl: profileImage ?? "https://www.sti.edu/cms/images/school/all/calamba.jpg",
                 numbersOfStudent: 0,
                 maximumStudents: parseInt(values.maximumStudents)

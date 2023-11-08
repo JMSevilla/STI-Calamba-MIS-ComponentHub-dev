@@ -58,6 +58,7 @@ const AddNewStudentForm = () => {
     const {
         control, getValues, watch, trigger, resetField, setValue
     } = useFormContext<StudentCreation>()
+    const [selectedDomain, setSelectedDomain] = useState('')
     const values = getValues()
     const hasNoMiddleName = watch('hasNoMiddleName')
     const hasNoMiddleNamePrevValue = usePreviousValue(hasNoMiddleName)
@@ -81,6 +82,10 @@ const AddNewStudentForm = () => {
     useEffect(() => {
         GenPass()
     }, [])
+    const handleSelectedDomain = (value: string) => {
+        setSelectedDomain(value)
+        setValue('domain', value)
+    }
     return (
         <div className="p-6.5">
             <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
@@ -121,9 +126,7 @@ const AddNewStudentForm = () => {
                     />
                 </div>
             </div>
-            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                <div className="w-full xl:w-1/2">
-                    <ControlledTextField 
+            <ControlledTextField 
                             control={control}
                             name='email'
                             required
@@ -131,9 +134,28 @@ const AddNewStudentForm = () => {
                             placeholder="Provide email address"
                             label='Email'
                             type="email"
+                            sx={{ mb: 2 }}
+                            domain={selectedDomain}
+                            inputEndAdornment={
+                                <>
+                                    <BasicSelectField 
+                                        label='Select domain'
+                                        options={[
+                                            {
+                                                value: '@gmail.com', label: '@gmail.com'
+                                            },
+                                            {
+                                                value: '@calamba.sti.edu.ph', label: '@calamba.sti.edu.ph'
+                                            }
+                                        ]}
+                                        value={selectedDomain}
+                                        onChange={handleSelectedDomain}
+                                    />
+                                </>
+                            }
                     />
-                </div>
-                <div className="w-full xl:w-1/2">
+            <div className='mb-4.5 flex flex-col gap-6 xl:flex-row'>
+            <div className="w-full xl:w-1/2">
                     <ControlledTextField 
                             control={control}
                             name='username'
@@ -718,7 +740,7 @@ const AddNewStudent = () => {
                     middlename: values.hasNoMiddleName ? "N/A" : values.middleName,
                     lastname: values.lastname,
                     username: values.username,
-                    email: values.email,
+                    email: values.email + values.domain,
                     password: values.password,
                     mobileNumber: values.mobileNumber,
                     course_id: values.course_id ?? "0",

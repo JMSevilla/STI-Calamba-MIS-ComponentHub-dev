@@ -13,6 +13,8 @@ import {
   import { ControlledField } from '.';
   import { ErrorFieldIcon } from './ErrorFieldIcon';
   import { Controller, FieldValues } from 'react-hook-form';
+  import InputAdornment from '@mui/material/InputAdornment';
+import React from 'react';
   
   type FormHelperTextProps = MuiFormHelperTextProps & {
     error?: boolean;
@@ -23,6 +25,8 @@ import {
       helperText?: string;
       containerProps?: StackProps;
       labelProps?: InputLabelProps;
+      inputEndAdornment?: React.ReactNode
+      domain?: string
     };
   
   export const InputLabel: React.FC<InputLabelProps> = ({
@@ -78,6 +82,8 @@ import {
     id,
     rows,
     type,
+    inputEndAdornment,
+    domain,
     ...rest
   }) => {
     return (
@@ -96,6 +102,11 @@ import {
               disabled ? theme.palette.grey[200] : 'inherit',
             ...sx,
           }}
+          endAdornment={
+            <>
+              {type === 'email' ? inputEndAdornment : <></>}
+            </>
+          }
           multiline={multiline}
           id={id}
           rows={rows}
