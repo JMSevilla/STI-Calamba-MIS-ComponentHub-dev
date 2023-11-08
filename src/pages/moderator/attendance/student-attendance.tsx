@@ -18,6 +18,9 @@ import { DatePicker } from '@mui/x-date-pickers/DatePicker'
 import { AxiosResponse } from 'axios'
 import LoadBackdrop from '../../../components/Backdrop/Backdrop'
 import { useToastMessage } from '../../../core/context/ToastContext'
+import * as FileSaver from 'file-saver'
+import XLSX from 'sheetjs-style'
+
 const StudentAttendance: React.FC = () => {
     const [references, setReferences] = useReferences()
     const { gridLoad, setGridLoad, loading, setLoading } = useLoaders()
@@ -463,6 +466,17 @@ const StudentAttendance: React.FC = () => {
             refetch()
         }
     }
+
+    function exportDataToExcel() {
+        const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+        const fileExtension = '.xlsx'
+
+        const ws = XLSX.utils.json_to_sheet(studentAttendance ?? filteredList)
+        const wb = { Sheets: { 'data': ws }, SheetNames: ['data'] };
+        const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+        const data: any = new Blob([excelBuffer], { type: fileType })
+        FileSaver.saveAs(data, "attendance-list-data" + fileExtension)
+    }
     return (
         <>
             <Breadcrumb pageName='Student Attendance Report' />
@@ -492,6 +506,12 @@ const StudentAttendance: React.FC = () => {
                         variant='contained'
                         sx={{ mb: 1, mr: 1 }}
                         >Find All</Button>
+                        <Button
+                        onClick={exportDataToExcel}
+                        size='small'
+                        variant='contained'
+                        sx={{ mb: 1, mr: 1 }}
+                        >Export Excel</Button>
                     </div>
                     {memoizedStudentAttendanceReport}
                 </BaseCard>

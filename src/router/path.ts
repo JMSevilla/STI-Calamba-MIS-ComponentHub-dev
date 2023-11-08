@@ -135,7 +135,7 @@ const coreRoutes: CoreRoutesProps[] = [
                 component: AccountArchived,
                 access: 1,
                 subMenuTitle: 'Accounts Archived',
-                isNewFeature : true
+                
             }
         ],
         svg: UAMSvg()
@@ -160,8 +160,7 @@ const coreRoutes: CoreRoutesProps[] = [
                 component: CourseManagement,
                 access: 1,
                 hasSubMenus: true,
-                subMenuTitle: 'Course Management',
-                isNewFeature: true
+                subMenuTitle: 'Course Management'
             }
         ],
         svg: AcademicSvg()
@@ -174,8 +173,7 @@ const coreRoutes: CoreRoutesProps[] = [
         customSubs: [],
         subMenuTitle: 'Categories',
         svg: CategoriesSvg(),
-        component: CategoriesManagement,
-        isNewFeature: true
+        component: CategoriesManagement
     },
     {
         path: '/dashboard/admin/subject-management',
@@ -185,7 +183,6 @@ const coreRoutes: CoreRoutesProps[] = [
         customSubs: [],
         subMenuTitle: 'Subject Management',
         svg: SubjectSvg(),
-        isNewFeature : true,
         component: SubjectManagement
     },
     {
@@ -284,15 +281,14 @@ const coreRoutes: CoreRoutesProps[] = [
                 component: AddStudent,
                 access: 2,
                 hasSubMenus: true,
-                subMenuTitle: 'Add Student',
-                isNewFeature: true
+                subMenuTitle: 'Add Student'
             },
             {
                 path: '/dashboard/moderator/archived',
                 component: AccountArchived,
                 access: 2,
                 subMenuTitle: 'Accounts Archived',
-                isNewFeature : true
+                
             }
         ],
         svg: AddStudentSvg()
@@ -305,8 +301,7 @@ const coreRoutes: CoreRoutesProps[] = [
         hasSubMenus: false,
         subMenuTitle: 'Section',
         customSubs: [],
-        svg: AcademicSvg(),
-        isBetaTest: true
+        svg: AcademicSvg()
     },
     {
         path: '/dashboard/moderator/ticketing',

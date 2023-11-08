@@ -1,11 +1,17 @@
 import { z } from "zod";
 import { requiredString } from "./required-string";
 
+const emailDomainNotAllowed = z.string().refine((data) => {
+    return !data.endsWith('@gmail.com') && !data.endsWith('@calamba.sti.edu.ph');
+}, {
+    message: 'Invalid email domain provided.',
+});
+
 const studentBaseSchema = z.object({
     firstname: requiredString('Your firstname is required.'),
     lastname: requiredString('Your lastname is required.'),
     middleName: z.string().optional(),
-    email: requiredString('Your email is required.').email(),
+    email: requiredString('Your email is required.').and(emailDomainNotAllowed),
     username: requiredString('Your username is required.'),
     password: requiredString('Your password is required.'),
     mobileNumber: requiredString('Kindly provide your mobile number'),
@@ -14,6 +20,7 @@ const studentBaseSchema = z.object({
         value: z.any()
     }).array(),
     course_id: requiredString('Kindly select course'),
+    domain: z.string().optional()
 })
 
 export const studentSubSchema = z.discriminatedUnion('hasNoMiddleName', [

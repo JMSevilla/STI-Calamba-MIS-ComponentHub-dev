@@ -60,10 +60,14 @@ const SingleHandledCreateTicketForm = () => {
                     value: item.id
                 }
             })
-            setComLabList(result)
+            if(!result) {
+                setComLabList([])
+            } else {
+                setComLabList(result)
+            }
         })
     }
-    useEffect(() => {
+    function initializedTicketIssues() {
         apiTicketsIssuesList.execute()
         .then(res => {
             const result = res.data?.length > 0 && res.data?.map((item: any) => {
@@ -72,8 +76,15 @@ const SingleHandledCreateTicketForm = () => {
                     value: item?.issueKey
                 }
             })
-            setIssues(result)
+            if(!result) {
+                setIssues([])
+            } else {
+                setIssues(result)
+            }
         })
+    }
+    useEffect(() => {
+        initializedTicketIssues()
     }, [])
     useEffect(() => {
         TriggerComLabList()

@@ -397,10 +397,8 @@ const TicketList: React.FC = () => {
                             onClick={() => {
                                 if(switchJoinAndLeft){
                                     fetchLeftParticipants(params.row.id)
-                                    setSelectedLoader(true)
                                 } else {
                                     DoDataBreakdown(params.row.id)
-                                    setSelectedLoader(true)
                                 }
                             }}
                             >SELECT</Button>

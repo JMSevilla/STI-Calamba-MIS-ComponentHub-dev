@@ -197,8 +197,8 @@ export type CourseManagementProps = {
     courseName: string
     categoryId: string
     courseAcronym: string
-    courseDescription: string | undefined
-    imgurl: string
+    courseDescription?: string | undefined
+    imgurl?: string | undefined
     numbersOfStudent: number
     maximumStudents: number
 }

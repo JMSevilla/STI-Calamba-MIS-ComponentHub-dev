@@ -88,7 +88,11 @@ const TicketDetails: React.FC = () => {
             .then((res: AxiosResponse | undefined) => {
                 res?.data?.length > 0 && res?.data.map((currAccs: any) => {
                     const fullName = currAccs.firstname + ' ' + currAccs.lastname;
-                    setCurrentAssignee(fullName)
+                    if(fullName !== null || fullName !== undefined) {
+                        setCurrentAssignee(fullName)
+                    } else {
+                        setCurrentAssignee("None")
+                    }
                 })
             })
         })
@@ -344,7 +348,7 @@ const TicketDetails: React.FC = () => {
                             marginBottom: '10px'
                         }}>
                             {
-                                item.specificAssignee == 0 ? 
+                                references?.access_level === 1 && item.specificAssignee == 0 ? 
                                 (
                                     <Button
                                     size='small'
@@ -353,10 +357,13 @@ const TicketDetails: React.FC = () => {
                                 ) : (
                                     <>
                                     {
-                                references?.imgurl === 'no-image' ? 
-                                <Avatar {...stringAvatarTicketDetails(references?.firstname + " " + references?.lastname)} />
+                                currentAssignee === 'None' ?
+                                <></>
                                 :
-                                <Avatar sx={{ width: 30, height: 30 }} src={references?.imgurl} />
+                                item.specificAssigneeAccount.imgurl === 'no-image' ? 
+                                <Avatar {...stringAvatarTicketDetails(item.specificAssigneeAccount.firstname + ' ' + item.specificAssigneeAccount.lastname)} />
+                                :
+                                <Avatar sx={{ width: 30, height: 30 }} src={item.specificAssigneeAccount.imgurl} />
                             } &nbsp;
                             {currentAssignee}
                                     </>
@@ -376,8 +383,8 @@ const TicketDetails: React.FC = () => {
                             marginBottom: '10px'
                         }}>
                             {
-                                item.imgurl === 'no-image' ? 
-                                <Avatar {...stringAvatarTicketDetails(item.firstname + " " + item.lastname)} />
+                                item.accounts.imgurl === 'no-image' ? 
+                                <Avatar {...stringAvatarTicketDetails(item.accounts.firstname + " " + item.accounts.lastname)} />
                                 :
                                 <Avatar sx={{ width: 30, height: 30 }} src={item.imgurl} />
                             } &nbsp;
