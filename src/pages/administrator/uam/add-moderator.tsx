@@ -56,6 +56,7 @@ const AddNewModeratorForm = () => {
     const {
         control, getValues, watch, trigger, resetField, setValue
     } = useFormContext<ModeratorCreation>()
+    const [selectedDomain, setSelectedDomain] = useState('')
     const values = getValues()
     const hasNoMiddleName = watch('hasNoMiddleName')
     const hasNoMiddleNamePrevValue = usePreviousValue(hasNoMiddleName)
@@ -77,6 +78,10 @@ const AddNewModeratorForm = () => {
     const result = zxcvbn(values.password == undefined ? "" : values.password);
     function GenPass(){
         setValue('password', useGenerationPassword(12))
+    }
+    const handleSelectedDomain = (value: string) => {
+        setSelectedDomain(value)
+        setValue('domain', value)
     }
     return (
         <div className="p-6.5">
@@ -118,9 +123,7 @@ const AddNewModeratorForm = () => {
                     />
                 </div>
             </div>
-            <div className="mb-4.5 flex flex-col gap-6 xl:flex-row">
-                <div className="w-full xl:w-1/2">
-                    <ControlledTextField 
+            <ControlledTextField 
                             control={control}
                             name='email'
                             required
@@ -128,9 +131,28 @@ const AddNewModeratorForm = () => {
                             placeholder="Provide email address"
                             label='Email'
                             type="email"
+                            sx={{ mb: 2 }}
+                            domain={selectedDomain}
+                            inputEndAdornment={
+                                <>
+                                    <BasicSelectField 
+                                        label='Select domain'
+                                        options={[
+                                            {
+                                                value: '@gmail.com', label: '@gmail.com'
+                                            },
+                                            {
+                                                value: '@calamba.sti.edu.ph', label: '@calamba.sti.edu.ph'
+                                            }
+                                        ]}
+                                        value={selectedDomain}
+                                        onChange={handleSelectedDomain}
+                                    />
+                                </>
+                            }
                     />
-                </div>
-                <div className="w-full xl:w-1/2">
+            <div className='mb-4.5 flex flex-col gap-6 xl:flex-row'>
+            <div className="w-full xl:w-1/2">
                     <ControlledTextField 
                             control={control}
                             name='username'
@@ -760,7 +782,7 @@ const AddNewModerator = () => {
                     middlename: values.hasNoMiddleName ? "N/A" : values.middleName,
                     lastname: values.lastname,
                     username: values.username,
-                    email: values.email,
+                    email: values.email + values.domain,
                     password: values.password,
                     mobileNumber: values.mobileNumber,
                     course_id: creationType ? "0" : values.course_id,
