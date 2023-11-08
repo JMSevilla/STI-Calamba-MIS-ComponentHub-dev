@@ -125,6 +125,7 @@ export const OtpEntryPage: React.FC = () => {
                             }
                             mutate(obj, {
                                 onSuccess: (res: any) => {
+                                    console.log(res.data)
                                     if(res?.data == 200){
                                         setPreLoad(false)
                                         login(obj.username, obj.password)
