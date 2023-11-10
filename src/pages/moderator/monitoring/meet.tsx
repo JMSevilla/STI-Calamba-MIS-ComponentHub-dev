@@ -326,9 +326,10 @@ const Meet: React.FC = () => {
     // }, [])
     useEffect(() => {
         setGridLoad(false)
-        // DoDataBreakdown()
-        // DoLeftDataBreakdown()
+        DoDataBreakdown()
+        DoLeftDataBreakdown()
         initializedFetchAppSettings()
+        room_status_watch()
     }, [])
     const JaasMeetingMemoized = useMemo(() => {
         return (

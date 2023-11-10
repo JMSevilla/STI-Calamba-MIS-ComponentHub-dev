@@ -67,13 +67,7 @@ const DashboardStudent = () => { //might be dynamic based on DB
       }
       apiJoinAsParticipant.execute(jitsiObj)
       .then((auth) => {
-          const joinedLogs: MeetRoomJoinedProps = {
-              accountId: references?.id,
-              _joinedStatus: 0,
-              comlabId: comlabId,
-              room_id: room_id
-          }
-          apiJoinedParticipantsLogs.execute(joinedLogs)
+            
           setPTAccessToken(auth.data)
           let concat = room_name?.replace(/\s+/g, "+")
           const findRoute: any = routes.find((item) => item.access === references?.access_level && item.path.includes('/dashboard/student/meet-conference'))?.path
@@ -81,6 +75,7 @@ const DashboardStudent = () => { //might be dynamic based on DB
               navigate(`${findRoute}?match=${concat}&room_id=${room_id}&type=${room_type}`)
           }, 2000)
       })
+        
   }
     function pressedUnableToJoin(room_name: string | undefined, room_id: string | undefined, comlabId: string | undefined,
       room_type: string | undefined) {
@@ -95,6 +90,13 @@ const DashboardStudent = () => { //might be dynamic based on DB
               setViolationModal(!violationModal)   
           }
           else {
+                const joinedLogs: MeetRoomJoinedProps = {
+                    accountId: references?.id,
+                    _joinedStatus: 0,
+                    comlabId: comlabId,
+                    room_id: room_id
+                }
+                apiJoinedParticipantsLogs.execute(joinedLogs)
               initializedJoinRoom(room_name, room_id, comlabId,room_type)
           }
       })
@@ -240,7 +242,9 @@ const DashboardStudent = () => { //might be dynamic based on DB
                       <div style={{
                           display: 'flex'
                       }}>
-                          <NormalButton 
+                          {
+                            params.row.room_type !== 'private' && 
+                            <NormalButton 
                               size='small'
                               variant='contained'
                               children='Join'
@@ -251,6 +255,7 @@ const DashboardStudent = () => { //might be dynamic based on DB
                               }}
                               disabled={params.row.isAuthorized == 1 ? true : false}
                           />
+                          }
                       </div>
                   )
               }

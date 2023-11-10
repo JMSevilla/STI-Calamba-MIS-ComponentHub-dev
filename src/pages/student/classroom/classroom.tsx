@@ -134,6 +134,7 @@ const ClassRoom: React.FC = () => {
             apiRoomPasswordIdentifier.execute(obj)
             .then((res) => {
                 if(res.data === 200) {
+                    setLoading(false)
                     initializedJoinRoom(roomDetails.room_name, obj.room_id, roomDetails.comlabId, roomDetails.room_type)
                 } else if(res.data === 401) {
                     ToastMessage(
@@ -176,15 +177,15 @@ const ClassRoom: React.FC = () => {
             userName: references?.username,
             roomName: room_name
         }
+        const joinedLogs: MeetRoomJoinedProps = {
+            accountId: references?.id,
+            _joinedStatus: 0,
+            comlabId: comlabId,
+            room_id: room_id
+        }
+        apiJoinedParticipantsLogs.execute(joinedLogs)
         apiJoinAsParticipant.execute(jitsiObj)
         .then((auth) => {
-            const joinedLogs: MeetRoomJoinedProps = {
-                accountId: references?.id,
-                _joinedStatus: 0,
-                comlabId: comlabId,
-                room_id: room_id
-            }
-            apiJoinedParticipantsLogs.execute(joinedLogs)
             setPTAccessToken(auth.data)
             let concat = room_name?.replace(/\s+/g, "+")
             const findRoute: any = routes.find((item) => item.access === references?.access_level && item.path.includes('/dashboard/student/meet-conference'))?.path
