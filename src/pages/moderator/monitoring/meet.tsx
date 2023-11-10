@@ -197,7 +197,7 @@ const Meet: React.FC = () => {
         ]
         return (
             <ProjectTable 
-                data={joinedParticipants}
+                data={joinedParticipants ?? []}
                 columns={columns}
                 pageSize={5}
                 loading={gridLoad}
@@ -268,7 +268,7 @@ const Meet: React.FC = () => {
         ]
         return (
             <ProjectTable 
-                data={apiLeftParticipantsList}
+                data={leftParticipants ?? []}
                 columns={columns}
                 pageSize={5}
                 loading={gridLoad}
@@ -278,38 +278,44 @@ const Meet: React.FC = () => {
     }, [leftParticipants, gridLoad])
     function DoLeftDataBreakdown() {
         apiLeftParticipantsList.execute(roomInfo?.room_id ?? matchRId).then(res => {
-            const result = res.data?.length > 0 && res.data?.map((item: any) => {
-                return {
-                    id: item.joined.id,
-                    room_id: item.joined.room_id,
-                    fullname: item.account.firstname + item.account.lastname,
-                    username: item.account.username,
-                    access_level: item.account.access_level,
-                    course: item.course.courseAcronym,
-                    imgurl: item.account.imgurl,
-                    date_joined: item.joined.date_joined
-                }
-            })
-            console.log(result)
-            setLeftParticipants(result) 
+            if(res.data == 400) {
+                setLeftParticipants([])
+            } else {
+                const result = res.data?.length > 0 && res.data?.map((item: any) => {
+                    return {
+                        id: item.joined.id,
+                        room_id: item.joined.room_id,
+                        fullname: item.account.firstname + item.account.lastname,
+                        username: item.account.username,
+                        access_level: item.account.access_level,
+                        course: item.course.courseAcronym,
+                        imgurl: item.account.imgurl,
+                        date_joined: item.joined.date_joined
+                    }
+                })
+                setLeftParticipants(result) 
+            }
         })
     }
     function DoDataBreakdown() {
         apiJoinedParticipantsList.execute(roomInfo?.room_id ?? matchRId).then(res => {
-            const result = res.data?.length > 0 && res.data?.map((item: any) => {
-                return {
-                    id: item.joined.id,
-                    room_id: item.joined.room_id,
-                    fullname: item.account.firstname + item.account.lastname,
-                    username: item.account.username,
-                    access_level: item.account.access_level,
-                    course: item.course.courseAcronym,
-                    imgurl: item.account.imgurl,
-                    date_joined: item.joined.date_joined
-                }
-            })
-            console.log(res.data)
-            setJoinedParticipants(result) 
+            if(res.data == 400) {
+                setJoinedParticipants([])
+            } else {
+                const result = res.data?.length > 0 && res.data?.map((item: any) => {
+                    return {
+                        id: item.joined.id,
+                        room_id: item.joined.room_id,
+                        fullname: item.account.firstname + item.account.lastname,
+                        username: item.account.username,
+                        access_level: item.account.access_level,
+                        course: item.course.courseAcronym,
+                        imgurl: item.account.imgurl,
+                        date_joined: item.joined.date_joined
+                    }
+                })
+                setJoinedParticipants(result) 
+            }
         })
     }
     // useEffect(() => {
@@ -323,7 +329,6 @@ const Meet: React.FC = () => {
         DoDataBreakdown()
         DoLeftDataBreakdown()
         initializedFetchAppSettings()
-        room_status_watch()
     }, [])
     const JaasMeetingMemoized = useMemo(() => {
         return (
@@ -444,7 +449,7 @@ const Meet: React.FC = () => {
                                 </div>
                                 {JaasMeetingMemoized}
                             </BaseCard>
-                            {/* <Grid container rowSpacing={1} sx={{ mt: 2 }} columnSpacing={{ xs: 1, sm: 2, md: 3}}>
+                            <Grid container rowSpacing={1} sx={{ mt: 2 }} columnSpacing={{ xs: 1, sm: 2, md: 3}}>
                                 <Grid item xs={6}>
                                     <BaseCard style={{ marginTop: '10px'}}>
                                         <Button size='small' sx={{
@@ -471,7 +476,7 @@ const Meet: React.FC = () => {
                                         {memoizedLeftParticipants}
                                     </BaseCard>
                                 </Grid>
-                            </Grid> */}
+                            </Grid>
                             <ControlledModal
                             open={forceLeave}
                             disableButton
