@@ -197,7 +197,7 @@ const Meet: React.FC = () => {
         ]
         return (
             <ProjectTable 
-                data={joinedParticipants ?? []}
+                data={joinedParticipants}
                 columns={columns}
                 pageSize={5}
                 loading={gridLoad}
@@ -268,7 +268,7 @@ const Meet: React.FC = () => {
         ]
         return (
             <ProjectTable 
-                data={leftParticipants ?? []}
+                data={apiLeftParticipantsList}
                 columns={columns}
                 pageSize={5}
                 loading={gridLoad}
@@ -278,44 +278,38 @@ const Meet: React.FC = () => {
     }, [leftParticipants, gridLoad])
     function DoLeftDataBreakdown() {
         apiLeftParticipantsList.execute(roomInfo?.room_id ?? matchRId).then(res => {
-            if(res.data == 400) {
-                setLeftParticipants([])
-            } else {
-                const result = res.data?.length > 0 && res.data?.map((item: any) => {
-                    return {
-                        id: item.joined.id,
-                        room_id: item.joined.room_id,
-                        fullname: item.account.firstname + item.account.lastname,
-                        username: item.account.username,
-                        access_level: item.account.access_level,
-                        course: item.course.courseAcronym,
-                        imgurl: item.account.imgurl,
-                        date_joined: item.joined.date_joined
-                    }
-                })
-                setLeftParticipants(result) 
-            }
+            const result = res.data?.length > 0 && res.data?.map((item: any) => {
+                return {
+                    id: item.joined.id,
+                    room_id: item.joined.room_id,
+                    fullname: item.account.firstname + item.account.lastname,
+                    username: item.account.username,
+                    access_level: item.account.access_level,
+                    course: item.course.courseAcronym,
+                    imgurl: item.account.imgurl,
+                    date_joined: item.joined.date_joined
+                }
+            })
+            console.log(result)
+            setLeftParticipants(result) 
         })
     }
     function DoDataBreakdown() {
         apiJoinedParticipantsList.execute(roomInfo?.room_id ?? matchRId).then(res => {
-            if(res.data == 400) {
-                setJoinedParticipants([])
-            } else {
-                const result = res.data?.length > 0 && res.data?.map((item: any) => {
-                    return {
-                        id: item.joined.id,
-                        room_id: item.joined.room_id,
-                        fullname: item.account.firstname + item.account.lastname,
-                        username: item.account.username,
-                        access_level: item.account.access_level,
-                        course: item.course.courseAcronym,
-                        imgurl: item.account.imgurl,
-                        date_joined: item.joined.date_joined
-                    }
-                })
-                setJoinedParticipants(result) 
-            }
+            const result = res.data?.length > 0 && res.data?.map((item: any) => {
+                return {
+                    id: item.joined.id,
+                    room_id: item.joined.room_id,
+                    fullname: item.account.firstname + item.account.lastname,
+                    username: item.account.username,
+                    access_level: item.account.access_level,
+                    course: item.course.courseAcronym,
+                    imgurl: item.account.imgurl,
+                    date_joined: item.joined.date_joined
+                }
+            })
+            console.log(res.data)
+            setJoinedParticipants(result) 
         })
     }
     // useEffect(() => {
