@@ -649,9 +649,9 @@ const TicketList: React.FC = () => {
                             {
                                 label: 'Ticket List'
                             },
-                            {
-                                label: 'Joined / Left Participants Logs'
-                            }
+                            // {
+                            //     label: 'Joined / Left Participants Logs'
+                            // }
                         ]   
                     }
                     >
