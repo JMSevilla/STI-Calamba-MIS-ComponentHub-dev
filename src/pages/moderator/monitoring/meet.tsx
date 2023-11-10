@@ -444,7 +444,7 @@ const Meet: React.FC = () => {
                                 </div>
                                 {JaasMeetingMemoized}
                             </BaseCard>
-                            <Grid container rowSpacing={1} sx={{ mt: 2 }} columnSpacing={{ xs: 1, sm: 2, md: 3}}>
+                            {/* <Grid container rowSpacing={1} sx={{ mt: 2 }} columnSpacing={{ xs: 1, sm: 2, md: 3}}>
                                 <Grid item xs={6}>
                                     <BaseCard style={{ marginTop: '10px'}}>
                                         <Button size='small' sx={{
@@ -471,7 +471,7 @@ const Meet: React.FC = () => {
                                         {memoizedLeftParticipants}
                                     </BaseCard>
                                 </Grid>
-                            </Grid>
+                            </Grid> */}
                             <ControlledModal
                             open={forceLeave}
                             disableButton
