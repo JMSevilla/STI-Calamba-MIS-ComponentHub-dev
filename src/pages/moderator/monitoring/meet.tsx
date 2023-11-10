@@ -449,14 +449,14 @@ const Meet: React.FC = () => {
                                 </div>
                                 {JaasMeetingMemoized}
                             </BaseCard>
-                            {/* <Grid container rowSpacing={1} sx={{ mt: 2 }} columnSpacing={{ xs: 1, sm: 2, md: 3}}>
+                            <Grid container rowSpacing={1} sx={{ mt: 2 }} columnSpacing={{ xs: 1, sm: 2, md: 3}}>
                                 <Grid item xs={6}>
                                     <BaseCard style={{ marginTop: '10px'}}>
                                         <Button size='small' sx={{
                                             float: 'right',
                                             mt: 2,
                                             mb: 2
-                                        }} onClick={DoDataBreakdown}>REFRESH</Button>
+                                        }} variant='contained' onClick={DoDataBreakdown}>REFRESH</Button>
                                         <Typography variant='button'>
                                             Joined Participants logs
                                         </Typography>
@@ -469,14 +469,14 @@ const Meet: React.FC = () => {
                                             float: 'right',
                                             mt: 2,
                                             mb: 2
-                                        }} onClick={DoLeftDataBreakdown}>REFRESH</Button>
+                                        }} variant='contained' onClick={DoLeftDataBreakdown}>REFRESH</Button>
                                         <Typography variant='button'>
                                            Participants left to this meeting logs
                                         </Typography>
                                         {memoizedLeftParticipants}
                                     </BaseCard>
                                 </Grid>
-                            </Grid> */}
+                            </Grid>
                             <ControlledModal
                             open={forceLeave}
                             disableButton

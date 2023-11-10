@@ -360,13 +360,10 @@ const TicketDetails: React.FC = () => {
                                 ) : (
                                     <>
                                     {
-                                currentAssignee === 'None' ?
-                                <></>
+                                references?.imgurl === 'no-image' ? 
+                                <Avatar {...stringAvatarTicketDetails(references?.firstname + " " + references?.lastname)} />
                                 :
-                                item.specificAssigneeAccount.imgurl === 'no-image' ? 
-                                <Avatar {...stringAvatarTicketDetails(item.specificAssigneeAccount.firstname + ' ' + item.specificAssigneeAccount.lastname)} />
-                                :
-                                <Avatar sx={{ width: 30, height: 30 }} src={item.specificAssigneeAccount.imgurl} />
+                                <Avatar sx={{ width: 30, height: 30 }} src={references?.imgurl} />
                             } &nbsp;
                             {currentAssignee}
                                     </>
