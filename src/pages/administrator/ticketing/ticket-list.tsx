@@ -295,23 +295,28 @@ const TicketList: React.FC = () => {
         const mapValues = ms?.length > 0 && ms.map((item: any) => item.value)
         return mapValues
     }
-    const { data, refetch } = useQuery({
-        queryKey: 'getAllRooms',
-        queryFn: () => apiGetAllRooms.execute({ section: mappedSections()}).then(res => {
-            const result = res.data?.length > 0 && res.data?.map((item: any) => {
-                return {
-                    id: item.room.id,
-                    room_name: item.room.room_name,
-                    room_status: item.room.room_status,
-                    room_type: item.room.room_type,
-                    numbers_of_joiners: item.participants.length,
-                    comlabId: item.room.comlabId,
-                    created_at: item.room.created_at
-                }
+    const [roomState, setRoomState] = useState([])
+    function initializedGetAllRooms() {
+        if(references?.access_level !== 1) {
+            apiGetAllRooms.execute({ section: mappedSections()}).then(res => {
+                const result = res.data?.length > 0 && res.data?.map((item: any) => {
+                    return {
+                        id: item.room.id,
+                        room_name: item.room.room_name,
+                        room_status: item.room.room_status,
+                        room_type: item.room.room_type,
+                        numbers_of_joiners: item.participants.length,
+                        comlabId: item.room.comlabId,
+                        created_at: item.room.created_at
+                    }
+                })
+                setRoomState(result)
             })
-            return result;
-        })
-    })
+        }
+    }
+    useEffect(() => {
+        initializedGetAllRooms()
+    }, [roomState])
     const memoizedRoomList = useMemo(() => {
         
         const columns: any = [
@@ -410,12 +415,12 @@ const TicketList: React.FC = () => {
         return (
             <ProjectTable 
                 columns={columns}
-                data={data ?? []}
+                data={roomState ?? []}
                 loading={gridLoad}
                 pageSize={10}
             />
         )
-    }, [gridLoad, data, switchJoinAndLeft])
+    }, [gridLoad, roomState, switchJoinAndLeft])
     const memoizedJoinedParticipants = useMemo(() => {
         
         const columns: any = [
