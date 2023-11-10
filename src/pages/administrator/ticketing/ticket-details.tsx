@@ -71,7 +71,7 @@ const TicketDetails: React.FC = () => {
     }
     useEffect(() => {
         initializedTicketDetails()
-    }, [data])
+    }, [])
     const { mutateAsync } = useMutateAssignToMe()
     function getFilteredComlabs(){
         data?.length > 0 && data.map((item: any) => {
