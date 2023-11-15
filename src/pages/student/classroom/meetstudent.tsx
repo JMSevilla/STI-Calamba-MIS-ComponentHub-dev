@@ -26,6 +26,8 @@ const MeetStudent: React.FC = () => {
     const [warnedOrUnAuthParticipantModal, setWarnedOrUnAuthParticipantModal] = useWarningOrUnauthorizedModal()
     const [authModal, setAuthModal] = useState(false)
     const [isTabVisible , setTabVisible] = useState(true)
+    const [alert, setAlert] = useState<boolean>(false)
+    const [contentLoad, setContentLoad] = useState(true)
     const jaasApiRef = useRef<any>(null)
     const apiLeaveMeeting = useApiCallback(
         async (api, args:{
@@ -71,7 +73,13 @@ const MeetStudent: React.FC = () => {
         room_status_watch()
     }, [status])
     useEffect(() => {
-        setPreLoad(false)
+        setTimeout(() => {
+            if(!PTAccessToken){
+                setAlert(!alert)
+            } else {
+                setContentLoad(false)
+            }
+        }, 6000)
     }, [])
     function LoggerMeetingActions(){
         const obj: MeetingActionsLogger = {
@@ -168,7 +176,22 @@ const MeetStudent: React.FC = () => {
     return (
         <>
             {
-                preload ? <LoadBackdrop open={preload} />
+                contentLoad ? <>
+                {
+                    !PTAccessToken &&
+                    <ControlledModal
+                        open={alert}
+                        disableButton
+                        title="Unauthorized Participant"
+                        maxWidth='md'
+                    >
+                        <Typography gutterBottom variant='button'>You are unauthorized to join with this meeting room</Typography> <br />
+                        <Typography variant='caption'>Attempting to enter the room without a valid access token is like crashing a private event without an invitation. It disrupts security and the room's purpose, compromising the experience for authorized participants. Ensure you have the right credentials to join.</Typography>
+                    </ControlledModal>
+                    
+                }
+                <LoadBackdrop open={contentLoad} />
+            </>
                 :
                 <>
                     <BaseCard>

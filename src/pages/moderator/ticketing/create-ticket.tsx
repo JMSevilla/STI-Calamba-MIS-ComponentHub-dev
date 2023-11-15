@@ -806,7 +806,7 @@ const CreateTicketFormAdditional = () => {
     return (
         <>
             <Breadcrumb pageName="Create Ticket" />
-            <BaseCard style={{ marginBottom: '20px'}}>
+            {/* <BaseCard style={{ marginBottom: '20px'}}>
             <BasicSwitch 
                     checked={checked}
                     handleChange={handleChange}
@@ -815,7 +815,7 @@ const CreateTicketFormAdditional = () => {
                         checked ? 'Switch to Simple Form' : 'Switch to Stepped Form'
                     }
                 />
-            </BaseCard>
+            </BaseCard> */}
             <ControlledTabs
             value={tabsValue}
             handleChange={handleChangeTabsValue}

@@ -65,10 +65,13 @@ const TicketDetails: React.FC = () => {
         ticketId: string,
         status: number
     }) => apiChangeStatusFromTicketDetails.execute(data))
-    const { data, refetch } = useQuery({
-        queryKey: 'initializedTicketDetails',
-        queryFn: () => apiFilteredWithNotifs.execute(TID).then(res => res.data)
-    })
+    const [data, setData] = useState([])
+    const initializedTicketDetails = () => {
+        apiFilteredWithNotifs.execute(TID).then(res => setData(res.data))
+    }
+    useEffect(() => {
+        initializedTicketDetails()
+    }, [])
     const { mutateAsync } = useMutateAssignToMe()
     function getFilteredComlabs(){
         data?.length > 0 && data.map((item: any) => {
@@ -138,7 +141,7 @@ const TicketDetails: React.FC = () => {
                         "dark",
                         "success"
                     )
-                    await refetch()
+                    initializedTicketDetails()
                 }
             }
         })
@@ -199,7 +202,7 @@ const TicketDetails: React.FC = () => {
                         "dark",
                         "success"
                     )
-                    await refetch()
+                    initializedTicketDetails()
                 } else {
                     setLoading(false)
                 }
@@ -357,13 +360,10 @@ const TicketDetails: React.FC = () => {
                                 ) : (
                                     <>
                                     {
-                                currentAssignee === 'None' ?
-                                <></>
+                                references?.imgurl === 'no-image' ? 
+                                <Avatar {...stringAvatarTicketDetails(references?.firstname + " " + references?.lastname)} />
                                 :
-                                item.specificAssigneeAccount.imgurl === 'no-image' ? 
-                                <Avatar {...stringAvatarTicketDetails(item.specificAssigneeAccount.firstname + ' ' + item.specificAssigneeAccount.lastname)} />
-                                :
-                                <Avatar sx={{ width: 30, height: 30 }} src={item.specificAssigneeAccount.imgurl} />
+                                <Avatar sx={{ width: 30, height: 30 }} src={references?.imgurl} />
                             } &nbsp;
                             {currentAssignee}
                                     </>
