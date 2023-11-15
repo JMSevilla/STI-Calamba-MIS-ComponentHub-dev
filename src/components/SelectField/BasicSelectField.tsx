@@ -20,7 +20,7 @@ const BasicSelectField: React.FC<SelectSmallProps> = ({ label, options, value, o
   };
 
   return (
-    <FormControl sx={{ m: 1, minWidth: 220 }} size="small">
+    <FormControl sx={{ minWidth: 220, width: '100%', mt: 2, mb: 2 }} size="small">
       <InputLabel id="select-small-label">{label}</InputLabel>
       <Select
         disabled={disabled}

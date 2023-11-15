@@ -3,7 +3,7 @@ import LoadBackdrop from '../../components/Backdrop/Backdrop'
 import { Breadcrumb } from '../../components/Breadcrumbs/BasicBreadCrumbs'
 import { useLoaders } from '../../core/context/LoadingContext'
 import { ControlledSelectField } from '../../components/SelectField'
-import { useEffect, useMemo, useState } from 'react'
+import React, { useEffect, useMemo, useRef, useState } from 'react'
 import { useApiCallback } from '../../core/hooks/useApi'
 import { useForm, FormProvider, useFormContext } from 'react-hook-form'
 import { ModeratorCreation, moderatorSubSchema } from '../../core/schema/moderator'
@@ -25,7 +25,7 @@ import { useMutation, useQuery } from 'react-query'
 import { AxiosError, AxiosResponse } from 'axios'
 import { useToastMessage } from '../../core/context/ToastContext'
 import { ControlledTabs } from '../../components/Tabs/Tabs'
-import { Typography, IconButton, Button, Tooltip, Card, CardHeader, Checkbox, Divider, List, ListItem, ListItemIcon, ListItemText, Grid, Avatar, TextField, Pagination } from '@mui/material'
+import { Typography, IconButton, Button, Tooltip, Card, CardHeader, Checkbox, Divider, List, ListItem, ListItemIcon, ListItemText, Grid, Avatar, TextField, Pagination, Container } from '@mui/material'
 import { ProjectTable } from '../../components/DataGrid/ProjectTable'
 import TimeRangePicker from '@wojtekmaj/react-timerange-picker';
 // icons
@@ -46,7 +46,12 @@ import { Check, CheckBox, LegendToggle } from '@mui/icons-material'
 import BasicSelectField from '../../components/SelectField/BasicSelectField'
 import { useAvatarConfiguration } from '../../core/hooks/useAvatarConfiguration'
 import ArchiveIcon from '@mui/icons-material/Archive';
-import { ControlledMultipleSelectField } from '../../components/SelectField/MultiSelectField'
+import { ControlledMultipleSelectField, MultipleSelectField } from '../../components/SelectField/MultiSelectField'
+import XLSX from 'sheetjs-style'
+import FileSaver from 'file-saver'
+import { parse } from 'csv-parse';
+import { GridColumnApi } from '@mui/x-data-grid'
+
 const options = {
     dictionary: {
         ...zxcvbnCommonPackage.dictionary,
@@ -205,6 +210,18 @@ type Transfering = {
     units: number,
     updated_at: Date
     accountId: number
+}
+
+interface ExportData {
+    firstname: string;
+    middlename: string;
+    lastname: string;
+    email: string;
+    username: string;
+    password: string;
+    mobileNumber: string;
+    course_id: number
+    multipleSections: string
 }
 
 function not(a: any, b: any) {
@@ -379,6 +396,20 @@ const AddNewStudent = () => {
     const [sections, setSections] = useState([])
     const [assignedSections, setAssignedSections] = useState([])
     const [students, setStudents] = useState([])
+    const [numbersOfItems, setNumbersOfItems] = useState<number>(0)
+    const [customExport, setCustomExport] = useState([
+        {
+            firstname: '',
+            middlename: '',
+            lastname: '',
+            email: '',
+            username: '',
+            password: '',
+            mobileNumber: 0,
+            imgurl: ''
+        }
+    ])
+    const [studentTabs, setStudentTabs] = useState(0)
     const { preload, setPreLoad, loading, setLoading, gridLoad, setGridLoad } = useLoaders()
     const { ToastMessage } = useToastMessage()
     const apiCourseList = useApiCallback(api => api.internal.getAllCoursesNonJoined())
@@ -731,6 +762,89 @@ const AddNewStudent = () => {
         setLoading(false)
     }, [])
     const { stringAvatarColumns } = useAvatarConfiguration()
+    const handleSubmissionFromExcel = async () => {
+        setLoading(!loading)
+        setCsvDataPreview(false)
+        csvData.length > 0 && csvData.map(async (row: ExportData) => {
+            if(row.firstname == '' || row.lastname == '' || row.email == ''
+            || row.multipleSections == '' || row.password == ''
+            || row.username == '' || row.course_id == 0) {
+                setLoading(false)
+                setCsvDataPreview(true)
+                ToastMessage(
+                    "There's something wrong with the required data. Please check the excel file",
+                    "top-right",
+                    false,
+                    true,
+                    true,
+                    true,
+                    undefined,
+                    "dark",
+                    "error"
+                )
+            } else {
+                const objStudent: AccountModeratorProps = {
+                    firstname: row.firstname,
+                    middlename: row.middlename == '' ? 'N/A' : row.middlename,
+                    lastname: row.lastname,
+                    username: row.username,
+                    email: row.email,
+                    password: row.password,
+                    mobileNumber: row.mobileNumber,
+                    course_id: row.course_id.toString(),
+                    section: references?.section,
+                    multipleSections: row.multipleSections
+                }
+                await mutateAsync(objStudent, {
+                    onSuccess: async (res: AxiosResponse | undefined) => {
+                        if(res?.data === 200) {
+                            ToastMessage(
+                                "Successfully added student",
+                                "top-right",
+                                false,
+                                true,
+                                true,
+                                true,
+                                undefined,
+                                "dark",
+                                "success"
+                            )
+                            setLoading(false)
+                        } else if(res?.data === 403) {
+                            ToastMessage(
+                                "Email or username is already exists",
+                                "top-right",
+                                false,
+                                true,
+                                true,
+                                true,
+                                undefined,
+                                "dark",
+                                "error"
+                            )
+                            setLoading(false)
+                        } else {
+                            ToastMessage(
+                                "Password is too weak",
+                                "top-right",
+                                false,
+                                true,
+                                true,
+                                true,
+                                undefined,
+                                "dark",
+                                "error"
+                            )
+                            setLoading(false)
+                        }
+                    },
+                    onError: (err) => {
+                        console.log(err)
+                    }
+                })
+            }
+        })
+    }
     const handleSubmission = () => {
         handleSubmit(
             async (values) => {
@@ -884,6 +998,7 @@ const AddNewStudent = () => {
                 setAssignedSections(result)
         })
     }
+
     const handleSelectedCourse = (e: string) => {
         apiAccountsByCourse.execute({ courseId: parseInt(e) , section_id: 0})
         .then(repository => {
@@ -902,11 +1017,6 @@ const AddNewStudent = () => {
     const filteredList = students.filter((row: any) => {
         return row.firstname.toLowerCase().includes(search.toLowerCase())
     })
-    const startIndex = (page - 1) * itemsPerPage;
-    const endIndex = startIndex + itemsPerPage;
-    function handleChangePage(event: any, newPage: number){
-        setPage(newPage)
-    }
     const memoizedSelectedStudentByCourse = useMemo(() => {
         function handleSelectedStudent(id: any){
             setAccounts([id])
@@ -999,6 +1109,157 @@ const AddNewStudent = () => {
     useEffect(() => {
         initializedSectionsByCourse()
     }, [guardCourseId])
+    const handleChangeTabs = (event: React.SyntheticEvent, newValue: number) => {
+        setStudentTabs(newValue)
+    }
+    const fileInputRef = useRef<HTMLInputElement>(null)
+    const [multiSections, setMultiSections] = useState('')
+    const [dataItems, setDataItems] = useState<number>(0)
+    const [csvData, setCsvData] = useState<any[]>([])
+    const [csvDataPreview, setCsvDataPreview] = useState(false)
+    const [csvselectedCourse, setCsvSelectedCourse] = useState(0)
+    const [csvSections, setCsvSections] = useState([])
+    const handleSelectedCsvCourse = (e: any) => {
+        setCsvSelectedCourse(e)
+        apiSectionList.execute(parseInt(e))
+            .then((res) => {
+                const result = res.data?.length > 0 && res.data.map((item: any) => {
+                    return {
+                        label: item.sectionName,
+                        value: item.id
+                    }
+                })
+                setCsvSections(result)
+        })
+    }
+    const handleFileChange = async (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0]
+        if(file){
+            const reader = new FileReader()
+            reader.onload = (e: any) => {
+                if(e.target){
+                    const data = e.target.result;
+                    const workbook = XLSX.read(data, { type: 'binary' })
+                    workbook.SheetNames.forEach((sheetName) => {
+                        const worksheet = workbook.Sheets[sheetName]
+                        const result = XLSX.utils.sheet_to_json(worksheet, { header: 1 })
+                        const columns: any = result.length > 0 ? result[0] : []
+                        result.shift()
+
+                        const formattedData = result.map((row: any) => {
+                            const rowData: { [key: string]: any } = {}
+                            columns.forEach((columnNames: any, index: any) => {
+                                rowData[columnNames] = row[index]
+                            })
+                            return rowData
+                        })
+                        setCsvData(formattedData)
+                        setCsvDataPreview(!csvDataPreview)
+                    })
+                }
+            };
+            reader.readAsBinaryString(file)
+        }
+    }
+    const handleChangeCsvDataLength = (event: any) => {
+        const value: number = event.target.value;
+        setDataItems(value)
+        setNumbersOfItems(value)
+    }
+    function GenPass(){
+        return useGenerationPassword(12)
+    }
+    const genEmptyExportArray = (count: number): ExportData[] => {
+        const customExportArray: ExportData[] = Array.from({ length: count }, (_, index) => ({
+            id: index + 1,
+            firstname: '',
+            middlename: '',
+            lastname: '',
+            email: '',
+            username: '',
+            password: GenPass(),
+            mobileNumber: "0",
+            course_id: csvselectedCourse,
+            multipleSections: multiSections
+        }))
+        return customExportArray
+    }
+    
+    const handleSectionsMultiple = (event: any) => {
+        setMultiSections(JSON.stringify(event))
+    }
+    const handleExportCsvTemplate = () => {
+        if(dataItems > 0) {
+            const result = genEmptyExportArray(dataItems)
+            const fileType = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet;charset=UTF-8'
+            const fileExtension = '.xlsx'
+
+            const ws = XLSX.utils.json_to_sheet(result)
+            const wb = { Sheets: { 'data': ws }, SheetNames: ['data']}
+            const excelBuffer = XLSX.write(wb, { bookType: 'xlsx', type: 'array' })
+            const data: any = new Blob([excelBuffer], { type: fileType })
+            FileSaver.saveAs(data, "student-creation-data" + fileExtension)
+        }
+    }
+    const handleChooseCsv = () => {
+        if(fileInputRef.current) {
+            fileInputRef.current.click()
+        }
+    }
+    const memoizedExcelDataPreview = useMemo(() => {
+        const columns = [
+            {
+                field: 'id',
+                headerName: 'ID',
+                width: 120
+            },
+            {
+                field: 'firstname',
+                sortable: false,
+                headerName: 'Firstname',
+                valueGetter: (params: any) => `${params.row.firstname}`,
+                width: 220
+            },
+            {
+                field: 'lastname',
+                sortable: false,
+                headerName: 'Lastname',
+                valueGetter: (params: any) => `${params.row.lastname}`,
+                width: 220
+            },
+            {
+                field: 'email',
+                sortable: false,
+                headerName: 'Email',
+                valueGetter: (params: any) => `${params.row.email}`,
+                width: 220
+            },
+            {
+                field: 'username',
+                sortable: false,
+                headerName: 'Username',
+                valueGetter: (params: any) => `${params.row.username}`,
+                width: 220 
+            },
+            {
+                field: 'password',
+                sortable: false,
+                headerName: 'Password',
+                valueGetter: (params: any) => `${params.row.password}`,
+                width: 220
+            },
+            {
+                field: 'mobileNumber',
+                sortable: false,
+                headerName: 'Mobile',
+                valueGetter: (params: any) => `${params.row.mobileNumber}`,
+                width: 220
+            }
+        ]
+        return (
+            <ProjectTable columns={columns} data={csvData} sx={{ width: '100%' }} pageSize={5} />
+        )
+    }, [gridLoad, csvData])
     return (
         <>
             {
@@ -1029,10 +1290,32 @@ const AddNewStudent = () => {
                                 }
                             >
                                 {
-                                    tabsValue == 0 ?
-                                    <FormProvider {...form}>
+                                        tabsValue == 0 ?
+                                        <>
+                                            <FormProvider {...form}>
                                         <BaseCard>
-                                        <div className='grid grid-cols-1 gap-9 sm:grid-cols-2'>
+                                        <ControlledTabs
+                                                value={studentTabs}
+                                                handleChange={handleChangeTabs}
+                                                style={{
+                                                    marginTop: '10px',
+                                                    padding: '10px',
+                                                }}
+                                                tabsinject={
+                                                    [
+                                                        {
+                                                            label: 'Create Student Manually'
+                                                        },
+                                                        {
+                                                            label: 'Import / Export Student Template'
+                                                        }
+                                                    ]
+                                                }
+                                            >
+                                                {
+                                                    studentTabs == 0 ?
+                                                    <>
+                                                    <div style={{ marginTop: '10px'}} className='grid grid-cols-1 gap-9 sm:grid-cols-2'>
                                             <div className='flex flex-col gap-9'>
                                                 <div className='rounded-sm border-stroke bg-white shadow-default dark:border-strokedark dark:bg-boxdark'>
                                                     <div className='border-b border-stroke py-4 px-6.5 dark:border-strokedark'>
@@ -1078,7 +1361,7 @@ const AddNewStudent = () => {
 
                                                 </div>
                                             </div>
-                                        </div>
+                                                     </div>
                                         
                                         <NormalButton 
                                             sx={{
@@ -1092,8 +1375,79 @@ const AddNewStudent = () => {
                                             disabled={!isValid}
                                             onClick={handleSubmission}
                                         />
+                                                    </>
+                                                    : studentTabs == 1 &&
+                                                    <>
+                                                        <Container maxWidth='lg' sx={{ mt: 3 }}>
+                                                            <Grid container rowSpacing={1} columnSpacing={{ xs: 1, sm: 2, md: 3 }}>
+                                                                <Grid item xs={6}>
+                                                                    <BaseCard>
+                                                                        <Typography variant='caption' gutterBottom>
+                                                                            Import excel for student creation
+                                                                        </Typography>
+                                                                        <input 
+                                                                            style={{ display: 'none'}}
+                                                                            ref={fileInputRef}
+                                                                            type='file'
+                                                                            onChange={handleFileChange}
+                                                                        />
+                                                                        <NormalButton 
+                                                                            variant='contained'
+                                                                            children='Import Excel'
+                                                                            color='success'
+                                                                            sx={{
+                                                                                width: '100%'
+                                                                            }}
+                                                                            size='small'
+                                                                            onClick={handleChooseCsv}
+                                                                        />
+                                                                    </BaseCard>
+                                                                </Grid>
+                                                                <Grid item xs={6}>
+                                                                    <BaseCard>
+                                                                    <Typography variant='caption' gutterBottom>
+                                                                            Export excel student creation template
+                                                                        </Typography>
+                                                                        <TextField 
+                                                                            variant='outlined'
+                                                                            sx={{ mt: 2, mb: 2, width: '100%' }}
+                                                                            value={numbersOfItems}
+                                                                            placeholder='Enter number of items'
+                                                                            label='Provide maximum students to be created'
+                                                                            onChange={handleChangeCsvDataLength}
+                                                                        />
+                                                                        <BasicSelectField 
+                                                                            options={courses}
+                                                                            label='Select course'
+                                                                            value={csvselectedCourse}
+                                                                            onChange={handleSelectedCsvCourse}
+                                                                        />
+                                                                        <MultipleSelectField 
+                                                                            multipleOptions={csvSections}
+                                                                            label='Select sections'
+                                                                            onChange={handleSectionsMultiple}
+                                                                        />
+                                                                        <NormalButton 
+                                                                            variant='contained'
+                                                                            children='Export Excel'
+                                                                            color='primary'
+                                                                            sx={{
+                                                                                width: '100%',
+                                                                                mt: 2
+                                                                            }}
+                                                                            size='small'
+                                                                            onClick={handleExportCsvTemplate}
+                                                                        />
+                                                                    </BaseCard>
+                                                                </Grid>
+                                                            </Grid>
+                                                        </Container>
+                                                    </>
+                                                }
+                                            </ControlledTabs>
                                         </BaseCard>
-                                        </FormProvider>
+                                    </FormProvider>
+                                        </>
                                         : tabsValue == 1 ?
                                         <>
                                             <BaseCard>
@@ -1188,6 +1542,21 @@ const AddNewStudent = () => {
 
                             >
                                 <Typography variant='subtitle1' gutterBottom>This account may proceed to the archive data.</Typography>
+                            </ControlledModal>
+                            <ControlledModal
+                            open={csvDataPreview}
+                            buttonTextAccept='PROCEED'
+                            buttonTextDecline='CANCEL'
+                            handleClose={() => setCsvDataPreview(false)}
+                            handleDecline={() => setCsvDataPreview(false)}
+                            title='Imported Excel Data Preview'
+                            maxWidth='md'
+                            handleSubmit={handleSubmissionFromExcel}
+                            >
+                                <Typography variant='button'>
+                                    Excel Data Preview
+                                </Typography>
+                                {memoizedExcelDataPreview}
                             </ControlledModal>
                         <LoadBackdrop open={loading} />
                     </>
