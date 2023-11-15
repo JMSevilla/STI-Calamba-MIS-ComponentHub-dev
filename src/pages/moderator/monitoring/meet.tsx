@@ -9,7 +9,7 @@ import { useJitsiAccessToken, useParticipantAccessToken, useReferences, useRoom 
 import { JitsiMeeting, JaaSMeeting } from '@jitsi/react-sdk'
 import routes from "../../../router/path";
 import ControlledModal from "../../../components/Modal/Modal";
-import { Button, Chip, Container, Grid, Typography } from "@mui/material";
+import { Avatar, Button, Chip, Container, Grid, Typography } from "@mui/material";
 import { useApiCallback } from "../../../core/hooks/useApi";
 import BaseCard from "../../../components/Card/Card";
 import { ControlledTabs } from "../../../components/Tabs/Tabs";
@@ -20,6 +20,7 @@ import FloatingSettingsButton from "../../../components/Buttons/FloatingSettings
 import FloatingSettingsDrawer from "../../../components/Sidebar/FloatingDrawer";
 import { BasicSwitch } from "../../../components/Switch/BasicSwitch";
 import { ApplicationSettings } from "../../../core/utils/settings-migration";
+import { useAvatarConfiguration } from "../../../core/hooks/useAvatarConfiguration";
 
 const Meet: React.FC = () => {
     const navigate = useNavigate()
@@ -29,6 +30,7 @@ const Meet: React.FC = () => {
     const [room, setRoom] = useAtom(CreateRoomAtom)
     const [joinedParticipants, setJoinedParticipants] = useState([])
     const [leftParticipants, setLeftParticipants] = useState([])
+    const [unauthorizedParticipants, setUnauthorizedParticipants] = useState([])
     const [references, setReferences] = useReferences()
     const { gridLoad, setGridLoad, loading, setLoading } = useLoaders()
     const [contentLoad, setContentLoad] = useState(true)
@@ -49,14 +51,6 @@ const Meet: React.FC = () => {
       setIsOpen(!isOpen);
     };
 
-    const apiLeaveMeeting = useApiCallback(
-        async (api, args:{
-            roomId: string | undefined,
-            firstname: string | undefined,
-            lastname: string | undefined,
-            accountId: number | undefined
-        }) => await api.internal.leaveMeeting(args)
-    )
     const apiRemoveFromTheCurrentMeeting = useApiCallback(
         async (api, id: number) => 
         await api.internal.deleteJoinedParticipants(id)
@@ -69,6 +63,9 @@ const Meet: React.FC = () => {
     }
     const apiJoinedParticipantsList = useApiCallback(
         async (api, room_id: string) => await api.internal.joinedParticipantsList(room_id)
+    )
+    const apiUnauthorizedParticipantsList = useApiCallback(
+        async (api, room_id: string) => await api.internal.unauthorizedParticipantsList(room_id)
     )
     const apiWatchRoomStatus = useApiCallback(
         async (api, room_id: string) =>
@@ -132,10 +129,33 @@ const Meet: React.FC = () => {
         const findRoute: any = routes.find((item) => item.access === references?.access_level && item.path.includes('/dashboard/moderator/monitoring'))?.path
         navigate(findRoute)
     }
-
+    const { stringAvatarColumns } = useAvatarConfiguration()
     const memoizedJoinedParticipants = useMemo(() => {
         
         const columns: any = [
+            {
+                field: 'imgurl',
+                headerName: '',
+                sortable: false,
+                width: 120,
+                renderCell: (params: any) => {
+                    if(params.row.imgurl == 'no-image'){
+                        return (
+                            <>
+                                <Avatar {...stringAvatarColumns(params.row.firstname + " " + params.row.lastname)} />
+                            </>
+                        )
+                    } else {
+                        return (
+                            <>
+                                <Avatar sx={{
+                                        width: 50, height: 50
+                                    }} src={params.row.imgurl} />
+                            </>
+                        )
+                    }
+                }
+            },
             {
                 field: 'id',
                 headerName: 'ID',
@@ -145,7 +165,8 @@ const Meet: React.FC = () => {
                 field: 'fullname',
                 headerName: 'Name',
                 sortable: false,
-                width: 180
+                width: 180,
+                valueGetter: (params: any) => `${params.row.firstname} ${params.row.lastname}`
             },
             {
                 field: 'username',
@@ -181,17 +202,9 @@ const Meet: React.FC = () => {
                 }
             },
             {
-                field: 'course',
-                headerName: 'Course',
-                valueGetter: (params: any) => `${params.row.course}`,
-                sortable: false,
-                width: 120
-            },
-            {
                 field: 'date_joined',
-                headerName: 'Date Joined',
-                sortable: false,
-                width: 160,
+                header: 'Date Joined',
+                width: 150,
                 valueGetter: (params: any) => `${moment(params.row.date_joined).calendar()}`
             }
         ]
@@ -208,6 +221,29 @@ const Meet: React.FC = () => {
     const memoizedLeftParticipants = useMemo(() => {
         const columns: any = [
             {
+                field: 'imgurl',
+                headerName: '',
+                sortable: false,
+                width: 120,
+                renderCell: (params: any) => {
+                    if(params.row.imgurl == 'no-image'){
+                        return (
+                            <>
+                                <Avatar {...stringAvatarColumns(params.row.firstname + " " + params.row.lastname)} />
+                            </>
+                        )
+                    } else {
+                        return (
+                            <>
+                                <Avatar sx={{
+                                        width: 50, height: 50
+                                    }} src={params.row.imgurl} />
+                            </>
+                        )
+                    }
+                }
+            },
+            {
                 field: 'id',
                 headerName: 'ID',
                 width: 90
@@ -216,7 +252,8 @@ const Meet: React.FC = () => {
                 field: 'fullname',
                 headerName: 'Name',
                 sortable: false,
-                width: 180
+                width: 180,
+                valueGetter: (params: any) => `${params.row.firstname} ${params.row.lastname}`
             },
             {
                 field: 'username',
@@ -250,20 +287,6 @@ const Meet: React.FC = () => {
                         )
                     }
                 }
-            },
-            {
-                field: 'course',
-                headerName: 'Course',
-                valueGetter: (params: any) => `${params.row.course}`,
-                sortable: false,
-                width: 120
-            },
-            {
-                field: 'date_joined',
-                headerName: 'Date Left',
-                sortable: false,
-                width: 160,
-                valueGetter: (params: any) => `${moment(params.row.date_joined).calendar()}`
             }
         ]
         return (
@@ -276,59 +299,133 @@ const Meet: React.FC = () => {
             />
         )
     }, [leftParticipants, gridLoad])
+    const memoizedUnauthorizedParticipants = useMemo(() => {
+        const columns: any = [
+            {
+                field: 'imgurl',
+                headerName: '',
+                sortable: false,
+                width: 120,
+                renderCell: (params: any) => {
+                    if(params.row.imgurl == 'no-image'){
+                        return (
+                            <>
+                                <Avatar {...stringAvatarColumns(params.row.firstname + " " + params.row.lastname)} />
+                            </>
+                        )
+                    } else {
+                        return (
+                            <>
+                                <Avatar sx={{
+                                        width: 50, height: 50
+                                    }} src={params.row.imgurl} />
+                            </>
+                        )
+                    }
+                }
+            },
+            {
+                field: 'id',
+                headerName: 'ID',
+                width: 90
+            },
+            {
+                field: 'fullname',
+                headerName: 'Name',
+                sortable: false,
+                width: 180,
+                valueGetter: (params: any) => `${params.row.firstname} ${params.row.lastname}`
+            },
+            {
+                field: 'username',
+                headerName: 'Username',
+                sortable: false,
+                width: 180
+            },
+            {
+                field: 'authorized',
+                headerName: 'Authorized',
+                sortable: false,
+                width: 200,
+                renderCell: (params: any) => (
+                    <Chip 
+                        color="error"
+                        size='small'
+                        label='Unauthorized'
+                        variant='filled'
+                    />
+                )
+            },
+            {
+                field: 'access_level',
+                headerName: 'Access',
+                sortable: false,
+                width: 180,
+                renderCell: (params: any) => {
+                    if(params.row.access_level == 2) {
+                        return (
+                            <Chip 
+                                size='small'
+                                color='warning'
+                                variant='filled'
+                                label='Moderator'
+                            />
+                        )
+                    } else {
+                        return (
+                            <Chip 
+                                size='small'
+                                color='info'
+                                variant='filled'
+                                label='Student'
+                            />
+                        )
+                    }
+                }
+            }
+        ]
+        return (
+            <ProjectTable 
+                data={unauthorizedParticipants ?? []}
+                columns={columns}
+                pageSize={5}
+                loading={gridLoad}
+                sx={{ width: '100%' }}
+            />
+        )
+    }, [unauthorizedParticipants, gridLoad])
     function DoLeftDataBreakdown() {
         apiLeftParticipantsList.execute(roomInfo?.room_id ?? matchRId).then(res => {
-            if(res.data == 400) {
-                setLeftParticipants([])
-            } else {
-                const result = res.data?.length > 0 && res.data?.map((item: any) => {
-                    return {
-                        id: item.joined.id,
-                        room_id: item.joined.room_id,
-                        fullname: item.account.firstname + item.account.lastname,
-                        username: item.account.username,
-                        access_level: item.account.access_level,
-                        course: item.course.courseAcronym,
-                        imgurl: item.account.imgurl,
-                        date_joined: item.joined.date_joined
-                    }
-                })
-                setLeftParticipants(result) 
-            }
+           setLeftParticipants(res.data)
         })
     }
     function DoDataBreakdown() {
         apiJoinedParticipantsList.execute(roomInfo?.room_id ?? matchRId).then(res => {
-            if(res.data == 400) {
-                setJoinedParticipants([])
-            } else {
-                const result = res.data?.length > 0 && res.data?.map((item: any) => {
-                    return {
-                        id: item.joined.id,
-                        room_id: item.joined.room_id,
-                        fullname: item.account.firstname + item.account.lastname,
-                        username: item.account.username,
-                        access_level: item.account.access_level,
-                        course: item.course.courseAcronym,
-                        imgurl: item.account.imgurl,
-                        date_joined: item.joined.date_joined
-                    }
-                })
-                setJoinedParticipants(result) 
-            }
+            setJoinedParticipants(res.data)
         })
     }
-    // useEffect(() => {
-    //     const intervalId = setInterval(room_status_watch, 5000);
-    //     return () => {
-    //         clearInterval(intervalId)
-    //     }
-    // }, [])
+    function DoUnauthorizedBreakdown() {
+        apiUnauthorizedParticipantsList.execute(roomInfo?.room_id ?? matchRId)
+        .then(res => {
+            setUnauthorizedParticipants(res.data)
+        })
+    }
     useEffect(() => {
         setGridLoad(false)
-        DoDataBreakdown()
-        DoLeftDataBreakdown()
         initializedFetchAppSettings()
+        DoDataBreakdown()
+            DoLeftDataBreakdown()
+            DoUnauthorizedBreakdown()
+    }, [])
+    useEffect(() => {
+        const intervalId = setInterval(() => {
+            DoDataBreakdown()
+            DoLeftDataBreakdown()
+            DoUnauthorizedBreakdown()
+        }, 5000)
+        return () => {
+            clearInterval(intervalId)
+        }
     }, [])
     const JaasMeetingMemoized = useMemo(() => {
         return (
@@ -397,29 +494,25 @@ const Meet: React.FC = () => {
                     <FloatingSettingsDrawer isOpen={isOpen} onClose={handleToggleDrawer}>
                        <Container sx={{ mt: 3 }}>
                             <Typography variant='button' gutterBottom>
-                                Current Room Settings
+                                Meeting room monitoring
                             </Typography>
                             <BaseCard style={{ marginTop: '20px'}}>
                                 <Typography variant='caption'>
-                                    Activity mode settings
+                                    Joined Participants
                                 </Typography>
-                                {/* deprecated might add for additional features if wanted */}
-                                {/* {roomSettings?.length > 0 && roomSettings.map((item: any) => (
-                                    <BasicSwitch 
-                                        checked={item.enableActivityMode}
-                                        handleChange={handleSwitchActivityMode}
-                                        inputProps={{ 'aria-label': 'controlled' }}
-                                        label={
-                                            item.enableActivityMode ? 'Track student logs'
-                                            : 'Switch to activity mode'
-                                        }
-                                    />
-                                ))} */}
+                                {memoizedJoinedParticipants}
                             </BaseCard>
-                            <BaseCard style={{ marginTop: '20px'}}>
+                            <BaseCard style={{ marginTop: '20px', marginBottom: '10px'}}>
                                 <Typography variant='caption'>
-                                    Room accessbility 
+                                    Left Participants
                                 </Typography>
+                                {memoizedLeftParticipants}
+                            </BaseCard>
+                            <BaseCard style={{ marginTop: '20px', marginBottom: '10px'}}>
+                                <Typography variant='caption'>
+                                    Unauthorized Participants
+                                </Typography>
+                                {memoizedUnauthorizedParticipants}
                             </BaseCard>
                        </Container>
                     </FloatingSettingsDrawer>
@@ -449,34 +542,6 @@ const Meet: React.FC = () => {
                                 </div>
                                 {JaasMeetingMemoized}
                             </BaseCard>
-                            <Grid container rowSpacing={1} sx={{ mt: 2 }} columnSpacing={{ xs: 1, sm: 2, md: 3}}>
-                                <Grid item xs={6}>
-                                    <BaseCard style={{ marginTop: '10px'}}>
-                                        <Button size='small' sx={{
-                                            float: 'right',
-                                            mt: 2,
-                                            mb: 2
-                                        }} variant='contained' onClick={DoDataBreakdown}>REFRESH</Button>
-                                        <Typography variant='button'>
-                                            Joined Participants logs
-                                        </Typography>
-                                        {memoizedJoinedParticipants}
-                                    </BaseCard>
-                                </Grid>
-                                <Grid item xs={6}>
-                                    <BaseCard style={{ marginTop: '10px'}}>
-                                    <Button size='small' sx={{
-                                            float: 'right',
-                                            mt: 2,
-                                            mb: 2
-                                        }} variant='contained' onClick={DoLeftDataBreakdown}>REFRESH</Button>
-                                        <Typography variant='button'>
-                                           Participants left to this meeting logs
-                                        </Typography>
-                                        {memoizedLeftParticipants}
-                                    </BaseCard>
-                                </Grid>
-                            </Grid>
                             <ControlledModal
                             open={forceLeave}
                             disableButton

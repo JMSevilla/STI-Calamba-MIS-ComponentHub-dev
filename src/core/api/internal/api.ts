@@ -178,6 +178,9 @@ export class InternalRequestAPI {
     public joinedParticipantsList(room_id: string){
         return this.axios.get(`/v1/meetingroomservice/current-joined-list/${room_id}`)
     }
+    public unauthorizedParticipantsList(room_id: string){
+        return this.axios.get(`/v1/meetingroomservice/unauthorized-participants/${room_id}`)
+    }
     public deleteJoinedParticipants(uuid: number){
         return this.axios.put(`/v1/meetingroomservice/delete-joined-participants/${uuid}`)
     }
@@ -376,4 +379,8 @@ export class InternalRequestAPI {
     public activeStatusIdentifier(accountId: number) {
         return this.axios.get(`/v1/accountsservice/account-active-status/${accountId}`)
     }
+    public markStudentAsDelete(id: string) {
+        return this.axios.delete(`/v1/accountsservice/marked-as-delete/${id}`)
+    }
+    
 }

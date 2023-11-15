@@ -20,6 +20,7 @@ import LoadBackdrop from '../../../components/Backdrop/Backdrop'
 import { useToastMessage } from '../../../core/context/ToastContext'
 import * as FileSaver from 'file-saver'
 import XLSX from 'sheetjs-style'
+import DeleteIcon from '@mui/icons-material/Delete';
 
 const StudentAttendance: React.FC = () => {
     const [references, setReferences] = useReferences()
@@ -58,6 +59,9 @@ const StudentAttendance: React.FC = () => {
         async (api, args: { id: string,
             productivityStatus: number }) =>
         await api.internal.studentMarkStatus(args)
+    )
+    const apimarkStudentAsDelete = useApiCallback(
+        async (api, id: string) => await api.internal.markStudentAsDelete(id)
     )
     const handleCloseDrawer = () => {
         setMoreOptions(false)
@@ -226,6 +230,41 @@ const StudentAttendance: React.FC = () => {
                     }
                 })
             break;
+            case "mark-as-delete":
+                setLoading(!loading)
+                setMoreOptions(false)
+                apimarkStudentAsDelete.execute(productivityId)
+                .then((res: AxiosResponse | undefined) => {
+                    if(res?.data === 200){
+                        setLoading(false)
+                        ToastMessage(
+                            "Successfully delete",
+                            "top-right",
+                            false,
+                            true,
+                            true,
+                            true,
+                            undefined,
+                            "dark",
+                            "success"
+                        )
+                        refetch()
+                    } else {
+                        setLoading(false)
+                        ToastMessage(
+                            "Something went wrong",
+                            "top-right",
+                            false,
+                            true,
+                            true,
+                            true,
+                            undefined,
+                            "dark",
+                            "error"
+                        )
+                    }
+                })
+                break;
         }
     }
     const list = () => (
@@ -273,6 +312,21 @@ const StudentAttendance: React.FC = () => {
             </ListItemButton>
             </ListItem>
             </List>
+           </BaseCard>
+           <BaseCard style={{ marginTop: '10px' }}>
+           <Typography variant='button'>Logs Deletion</Typography>
+           <List>
+            <ListItem disablePadding>
+            <ListItemAvatar>
+                <Avatar sx={{ bgcolor: 'red'}}>
+                    <DeleteIcon />
+                </Avatar>
+            </ListItemAvatar>
+            <ListItemButton onClick={() => markStatusesContainer("mark-as-delete")}>
+                <ListItemText primary={'DELETE'} />
+            </ListItemButton>
+            </ListItem>
+           </List>
            </BaseCard>
            </Container>
         </Box>
