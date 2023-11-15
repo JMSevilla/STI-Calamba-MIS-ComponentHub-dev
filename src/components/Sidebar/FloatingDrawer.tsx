@@ -19,7 +19,7 @@ const FloatingSettingsDrawer: React.FC<FloatingSettingsDrawerProps> = ({
       onClose={onClose}
     >
       <Box
-      sx={{ width: 350 }}
+      sx={{ width: 750 }}
       role="presentation"
       >
         {children}
