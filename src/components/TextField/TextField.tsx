@@ -8,6 +8,8 @@ import {
     Box,
     FormHelperTextProps as MuiFormHelperTextProps,
     StackProps,
+    Chip,
+    Badge,
   } from '@mui/material';
   import { red } from '@mui/material/colors';
   import { ControlledField } from '.';
@@ -37,7 +39,10 @@ import React from 'react';
     return (
       <MuiInputLabel {...rest}>
         <Box sx={{ display: 'flex' }}>
-          {required && <Box sx={{ color: red[500], mr: 0.5 }}>*</Box>}
+          {
+            required &&
+            <Box sx={{ color: red[500], mr: 0.5 }}>•</Box>
+          }
           {children}
         </Box>
       </MuiInputLabel>
