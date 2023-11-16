@@ -213,13 +213,13 @@ type Transfering = {
 }
 
 interface ExportData {
-    firstname: string;
-    middlename: string;
-    lastname: string;
-    email: string;
-    username: string;
-    password: string;
-    mobileNumber: string;
+    firstname: string | undefined;
+    middlename: string | undefined;
+    lastname: string | undefined;
+    email: string | undefined;
+    username: string | undefined;
+    password: string | undefined;
+    mobileNumber: string | undefined;
     course_id: number
     multipleSections: string
 }
@@ -397,18 +397,6 @@ const AddNewStudent = () => {
     const [assignedSections, setAssignedSections] = useState([])
     const [students, setStudents] = useState([])
     const [numbersOfItems, setNumbersOfItems] = useState<number>(0)
-    const [customExport, setCustomExport] = useState([
-        {
-            firstname: '',
-            middlename: '',
-            lastname: '',
-            email: '',
-            username: '',
-            password: '',
-            mobileNumber: 0,
-            imgurl: ''
-        }
-    ])
     const [studentTabs, setStudentTabs] = useState(0)
     const { preload, setPreLoad, loading, setLoading, gridLoad, setGridLoad } = useLoaders()
     const { ToastMessage } = useToastMessage()
@@ -751,7 +739,7 @@ const AddNewStudent = () => {
             await apiCreateStudent.execute(data)
         );
     }
-    const { mutateAsync } = useCreateStudent()
+    const { mutate, mutateAsync } = useCreateStudent()
     useEffect(() => {
         courseList()
         assignationCourseList()
@@ -762,13 +750,13 @@ const AddNewStudent = () => {
         setLoading(false)
     }, [])
     const { stringAvatarColumns } = useAvatarConfiguration()
-    const handleSubmissionFromExcel = async () => {
+    const handleSubmissionFromExcel = () => {
         setLoading(!loading)
         setCsvDataPreview(false)
-        csvData.length > 0 && csvData.map(async (row: ExportData) => {
-            if(row.firstname == '' || row.lastname == '' || row.email == ''
-            || row.multipleSections == '' || row.password == ''
-            || row.username == '' || row.course_id == 0) {
+        csvData.length > 0 && csvData.map( async (row: ExportData) => {
+            if(row.firstname == undefined || row.lastname == undefined || row.email == undefined
+            || row.multipleSections == undefined || row.password == undefined
+            || row.username == undefined || row.course_id == 0) {
                 setLoading(false)
                 setCsvDataPreview(true)
                 ToastMessage(
@@ -785,7 +773,7 @@ const AddNewStudent = () => {
             } else {
                 const objStudent: AccountModeratorProps = {
                     firstname: row.firstname,
-                    middlename: row.middlename == '' ? 'N/A' : row.middlename,
+                    middlename: row.middlename == undefined ? 'N/A' : row.middlename,
                     lastname: row.lastname,
                     username: row.username,
                     email: row.email,
@@ -795,51 +783,47 @@ const AddNewStudent = () => {
                     section: references?.section,
                     multipleSections: row.multipleSections
                 }
-                await mutateAsync(objStudent, {
-                    onSuccess: async (res: AxiosResponse | undefined) => {
-                        if(res?.data === 200) {
-                            ToastMessage(
-                                "Successfully added student",
-                                "top-right",
-                                false,
-                                true,
-                                true,
-                                true,
-                                undefined,
-                                "dark",
-                                "success"
-                            )
-                            setLoading(false)
-                        } else if(res?.data === 403) {
-                            ToastMessage(
-                                "Email or username is already exists",
-                                "top-right",
-                                false,
-                                true,
-                                true,
-                                true,
-                                undefined,
-                                "dark",
-                                "error"
-                            )
-                            setLoading(false)
-                        } else {
-                            ToastMessage(
-                                "Password is too weak",
-                                "top-right",
-                                false,
-                                true,
-                                true,
-                                true,
-                                undefined,
-                                "dark",
-                                "error"
-                            )
-                            setLoading(false)
-                        }
-                    },
-                    onError: (err) => {
-                        console.log(err)
+                await apiCreateStudent.execute(objStudent)
+                .then((res: AxiosResponse | undefined) => {
+                    if(res?.data === 200) {
+                        ToastMessage(
+                            "Successfully added student",
+                            "top-right",
+                            false,
+                            true,
+                            true,
+                            true,
+                            undefined,
+                            "dark",
+                            "success"
+                        )
+                        setLoading(false)
+                    } else if(res?.data === 403) {
+                        ToastMessage(
+                            "Email or username is already exists",
+                            "top-right",
+                            false,
+                            true,
+                            true,
+                            true,
+                            undefined,
+                            "dark",
+                            "error"
+                        )
+                        setLoading(false)
+                    } else {
+                        ToastMessage(
+                            "Password is too weak",
+                            "top-right",
+                            false,
+                            true,
+                            true,
+                            true,
+                            undefined,
+                            "dark",
+                            "error"
+                        )
+                        setLoading(false)
                     }
                 })
             }
@@ -1172,11 +1156,11 @@ const AddNewStudent = () => {
     const genEmptyExportArray = (count: number): ExportData[] => {
         const customExportArray: ExportData[] = Array.from({ length: count }, (_, index) => ({
             id: index + 1,
-            firstname: '',
-            middlename: '',
-            lastname: '',
-            email: '',
-            username: '',
+            firstname: undefined,
+            middlename: 'N/A',
+            lastname: undefined,
+            email: undefined,
+            username: undefined,
             password: GenPass(),
             mobileNumber: "0",
             course_id: csvselectedCourse,
